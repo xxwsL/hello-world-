@@ -1,0 +1,22 @@
+--cpu Cortex-M7.fp.dp
+"..\obj\startup_stm32f767xx.o"
+"..\obj\test.o"
+"..\obj\xxwsl.o"
+"..\obj\delay.o"
+"..\obj\led.o"
+"..\obj\mpu.o"
+"..\obj\sdram.o"
+"..\obj\lcd.o"
+"..\obj\ltdc.o"
+"..\obj\key.o"
+"..\obj\ov5640.o"
+"..\obj\sccb.o"
+"..\obj\pcf8574.o"
+"..\obj\myiic.o"
+"..\obj\dcmi.o"
+"..\obj\matrix_ot.o"
+"..\obj\network.o"
+--strict --scatter "..\OBJ\TEST.sct"
+--summary_stderr --info summarysizes --map --xref --callgraph --symbols
+--info sizes --info totals --info unused --info veneers
+--list "..\OBJ\TEST.map" -o ..\OBJ\TEST.axf

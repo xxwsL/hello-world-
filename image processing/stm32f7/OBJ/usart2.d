@@ -1,0 +1,13 @@
+..\obj\usart2.o: ..\HARDWARE\USART2\usart2.c
+..\obj\usart2.o: ..\SYSTEM\sys\sys.h
+..\obj\usart2.o: ..\SYSTEM\sys\stm32f7xx.h
+..\obj\usart2.o: ..\SYSTEM\sys\stm32f767xx.h
+..\obj\usart2.o: ..\SYSTEM\sys\core_cm7.h
+..\obj\usart2.o: E:\keil5\ARM\ARMCC\Bin\..\include\stdint.h
+..\obj\usart2.o: ..\SYSTEM\sys\core_cmInstr.h
+..\obj\usart2.o: ..\SYSTEM\sys\cmsis_armcc.h
+..\obj\usart2.o: ..\SYSTEM\sys\core_cmFunc.h
+..\obj\usart2.o: ..\SYSTEM\sys\core_cmSimd.h
+..\obj\usart2.o: ..\SYSTEM\sys\system_stm32f7xx.h
+..\obj\usart2.o: ..\HARDWARE\USART2\usart2.h
+..\obj\usart2.o: E:\keil5\ARM\ARMCC\Bin\..\include\stdio.h
