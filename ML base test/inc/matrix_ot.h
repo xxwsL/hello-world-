@@ -21,11 +21,18 @@
 #define f32MatrixMessage(MatName) f32Flag,MatLine(MatName),f32MatRow(MatName)
 
 //矩阵可执行函数
-#define MatrixFunction //output,matrix_cut
+#define MarFiInit output,mat_cut,mat_cov	
 
 //矩阵初始化宏
-#define i16MatrixInit(MatName) {i16MatrixAdd(MatName),i16MatrixMessage(MatName),MatrixFunction}
-#define f32MatrixInit(MatName) {f32MatrixAdd(MatName),f32MatrixMessage(MatName),MatrixFunction}
+#define i16MatInit(MatName) {i16MatrixAdd(MatName),i16MatrixMessage(MatName)}
+#define f32MatInit(MatName) {f32MatrixAdd(MatName),f32MatrixMessage(MatName)}
+
+typedef struct MatFunction {
+	//矩阵调用函数
+	uint8_t (*output) (struct MatrixStr *mat);
+	struct MatrixStr (*mat_cut) (struct MatrixStr *mat_a, uint8_t cut_line_size, uint8_t cut_row_size, uint8_t number, uint8_t remat_type);
+	struct MatrixStr (*mat_cov) (struct MatrixStr *mat);
+}MatFistr;
 
 //一类矩阵
 typedef struct MatrixStr {
@@ -34,13 +41,17 @@ typedef struct MatrixStr {
 	uint16_t flag;
 	uint16_t line;
 	uint16_t row;
-	//矩阵调用函数
-	//uint8_t (*output) (struct MatrixStr);
-	//struct MatrixStr (*matrix_cut) (struct MatrixStr, uint8_t, uint8_t, uint8_t,uint8_t);
+	//MatFistr function;
 }MatStr;
 
-uint8_t output(MatStr* mat); //矩阵已制表形式输出
-MatStr matrix_cut(MatStr* mat_a,uint8_t cut_line_size, uint8_t cut_row_size, uint8_t number,uint8_t remat_type);	//切割矩阵
+extern MatFistr matfi;
+
+//矩阵已制表形式输出
+uint8_t output(MatStr *mat); 
+//切割矩阵
+MatStr mat_cut(MatStr *mat_a,uint8_t cut_line_size, uint8_t cut_row_size, uint8_t number,uint8_t remat_type);
+//求矩阵协方差
+MatStr mat_cov(MatStr *mat);
 
 
 #endif // ! _matrix_ot_h_
