@@ -13,31 +13,36 @@ float TempMatr[][2] = {
 	3,4
 };
 
+int16_t MultMat[][3] = {
+	1,2,1,
+	1,2,1
+};
+
 StatusStr TestStatus;									//标志类
 MatStr testmat = i16MatInit(TestMatr);					//初始化信息包括矩阵地址，行数 ，列数
 MatStr tempmat = f32MatInit(TempMatr);	
+MatStr multmat = i16MatInit(MultMat);
 MatStr voidmat;							
 
 int main(void)									
 {
-	if (testmat.flag & i16Flag){
-		printf("this is a int16_t matrix\n\n");			//测试矩阵类型 
-	}
+	/*voidmat = matfi.mat_cut(&testmat, 2, 2, 1, f32Flag);*/
 
-	printf("Test Mat line = %d\n\n", testmat.line);		//测试矩阵行数
-	printf("Test Mat row  = %d\n\n", testmat.row);		//测试矩阵列数
-
-	voidmat = matfi.mat_cut(&testmat, 2, 2, 1, f32Flag);
-
-	printf("Test矩阵 =\n");
-	matfi.output(&testmat);
-	printf("voidmat矩阵 =\n");
-	matfi.output(&voidmat);
-
-	printf("tempmat矩阵 =\n");
 	tempmat =matfi.mat_cov(&tempmat);
-	matfi.output(&tempmat);
 	
+	//voidmat = matfi.mat_mult(&tempmat,&multmat);
+
+	//printf("Test矩阵\n");
+	//matfi.mat_message(&testmat);
+	//matfi.output(&testmat);
+
+	//printf("voidmat矩阵\n");
+	//matfi.mat_message(&voidmat);
+	//matfi.output(&voidmat);
+
+	printf("tempmat矩阵");
+	matfi.mat_message(&tempmat);
+	matfi.output(&tempmat);
 
 	while (1);
 	return true;
