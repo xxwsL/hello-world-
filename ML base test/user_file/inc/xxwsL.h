@@ -12,5 +12,11 @@
 
 #include "matrix_ot.h"
 
+
+extern "C"
+{
+	#include "matrix_ot.h"
+}
+
 #endif
 

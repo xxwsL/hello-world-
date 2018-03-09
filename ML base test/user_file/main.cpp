@@ -22,23 +22,24 @@ StatusStr TestStatus;									//标志类
 MatStr testmat = i16MatInit(TestMatr);					//初始化信息包括矩阵地址，行数 ，列数
 MatStr tempmat = f32MatInit(TempMatr);	
 MatStr multmat = i16MatInit(MultMat);
-MatStr voidmat;							
+MatStr voidmat;						
+
 
 int main(void)									
 {
-	/*voidmat = matfi.mat_cut(&testmat, 2, 2, 1, f32Flag);*/
-
-	tempmat =matfi.mat_cov(&tempmat);
+	//tempmat =matfi.mat_cov(&tempmat);
 	
 	//voidmat = matfi.mat_mult(&tempmat,&multmat);
 
-	//printf("Test矩阵\n");
-	//matfi.mat_message(&testmat);
-	//matfi.output(&testmat);
+	//mat_qr(&testmat,&voidmat,&tempmat);
 
-	//printf("voidmat矩阵\n");
-	//matfi.mat_message(&voidmat);
-	//matfi.output(&voidmat);
+	printf("Test矩阵\n");
+	matfi.mat_message(get(testmat));
+	matfi.output(&testmat);
+
+	printf("voidmat矩阵\n");
+	matfi.mat_message(&voidmat);
+	matfi.output(&voidmat);
 
 	printf("tempmat矩阵");
 	matfi.mat_message(&tempmat);

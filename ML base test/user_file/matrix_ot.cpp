@@ -2,11 +2,11 @@
 
 MatFistr matfi = MatFiInit;
 
-//优化次数:3
+//优化次数:4
 //输出float型矩阵
 //mat:矩阵
 //return:位宽8标志位
-uint8_t output(const MatStr *mat)		
+bool output(const MatStr *mat)		
 {
 	uint16_t i = 0, j = 0;								//行和列地址偏移量
 	float* f32add;										//float类型矩阵指针
@@ -54,15 +54,15 @@ uint8_t output(const MatStr *mat)
 	return true;
 }
 
-//优化次数:2
+//优化次数:3
 //把矩阵切割成对应大小
 //matrix_a:被切割矩阵a
 //matrix_b:切割部分载体
 //cut_line_szie:切割行长
 //cut_row_size :切割列长
 //number:切割目标位置
-//return:矩阵结构体
-MatStr mat_cut(MatStr *mat,uint8_t cut_line_size, uint8_t cut_row_size, uint8_t number,uint8_t remat_type)
+//return:矩阵结构体(内存管理申请内存,没被释放)
+MatStr mat_cut(const MatStr *mat,uint16_t cut_line_size, uint16_t cut_row_size, uint16_t number, uint16_t remat_type)
 {
 	uint16_t  i = NULL,j=NULL;
 	uint16_t  rows_max=NULL;
@@ -274,10 +274,11 @@ MatStr mat_create(uint16_t mat_line, uint16_t mat_row, uint16_t mat_type)
 	return create_mat;
 }
 
+//优化次数:1
 //删除矩阵并释放矩阵内存
 //mat:要释放的矩阵指针
 //return:位宽8标志位
-uint8_t mat_delete(MatStr *mat)
+bool mat_delete(MatStr *mat)
 {
 	if (mat->SaveAddr == NULL) {
 		return false;
@@ -309,12 +310,12 @@ uint8_t mat_delete(MatStr *mat)
 	return true;
 }
 
-//优化次数:0
+//优化次数:1
 //矩阵全员赋值value
 //mat:输入赋值矩阵
 //value:有效值
 //return:位宽8标志位
-uint8_t mat_assignment(MatStr *mat,float value)
+bool mat_assignment(MatStr *mat,float value)
 {
 	int16_t *i16add=NULL;
 	float *f32add=NULL;
@@ -343,11 +344,11 @@ uint8_t mat_assignment(MatStr *mat,float value)
 	return true;
 }
 
-//优化次数:0
+//优化次数:1
 //矩阵全员赋值0
 //mat:输入赋值矩阵
 //return:位宽8标志位
-uint8_t mat_zero(MatStr *mat)
+bool mat_zero(MatStr *mat)
 {
 	if (mat_assignment(mat, 0))
 		return true;
@@ -495,11 +496,11 @@ MatStr mat_mult(const MatStr *mat_l,const MatStr *mat_r)
 	return remat;
 }
 
-//优化次数:0
+//优化次数:1
 //打印矩阵信息
 //mat:输入矩阵
 //return:位宽8标志位
-uint8_t mat_message(const MatStr *mat)
+bool mat_message(const MatStr *mat)
 {
 	if (mat->SaveAddr == NULL) {
 		return false;
@@ -520,3 +521,49 @@ uint8_t mat_message(const MatStr *mat)
 #endif // Simulation
 	return true;
 }
+
+//优化次数:0
+//矩阵QR分解
+//mat:输入矩阵
+//q_mat:分解矩阵q
+//r_mat:分解矩阵r
+//return:bool标志位
+bool mat_qr(const MatStr *mat,MatStr *q_mat,MatStr *s_mat)
+{
+	uint16_t i = NULL, j = NULL, k = NULL,N=NULL;
+	int16_t *mat_i16add=NULL;
+	float *mat_f32add=NULL,*q_f32add=NULL,*r_f32add=NULL;
+	MatStr qmat,rmat,a_mat,b_mat;
+	if (mat->SaveAddr == NULL) {
+		return false;
+	}
+	qmat = mat_create(mat->line,mat->row,f32Flag);
+	rmat = mat_create(mat->row,mat->row,f32Flag);
+	switch (mat->flag&MatTypeFlag){
+		case i16Flag:
+			mat_i16add = (int16_t*)(mat->SaveAddr);
+			a_mat = mat_cut(mat,mat->line,1,0,f32Flag);
+			matfi.output(&a_mat);
+			break;
+	default:
+		break;
+	}
+	return true;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
