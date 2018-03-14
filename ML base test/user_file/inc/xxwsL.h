@@ -11,11 +11,14 @@
 #include "xxwsL_status.h"
 
 #include "matrix_ot.h"
+#include "xxwsL_math.h"
+#include "network.h"
 
 
 extern "C"
 {
 	#include "matrix_ot.h"
+	#include "network.h"
 }
 
 #endif
