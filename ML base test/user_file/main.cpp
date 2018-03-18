@@ -1,4 +1,5 @@
 #include "xxwsL.h"
+#include "simaple.h"
 
 //matrix_ot test date
 int16_t TestMatr[][5] = {
@@ -28,35 +29,42 @@ MatStr multmat = f32MatInit(MultMat);
 MatStr *voidmat0;		
 MatStr *voidmat1;
 
-//network test date
-uint8_t model[72] = {
-	0x00,0x00,0x00,0x00,0xC0,0x00,0x00,0xE0,0x00,0x00,0x60,0x00,0x00,0x70,0x00,0x00,0x30,0x00,0x00,0x38,0x00,0x00,0x18,0x00,0x00,0x1C,0x00,0x00,0x0C,0x00,0x00,0x0E,0x00,0x00,0x06,0x00,0x00,
-	0x07,0x00,0x00,0x03,0x00,0x80,0x03,0x00,0x80,0x01,0x00,0xC0,0x01,0x00,0xC0,0x01,0x00,0xC0,0x00,0x00,0xC0,0x00,0x00,0xC0,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00
-};
-
 float train_mat[576][1] = {
 };
 
-float hide_network_buf[10][576] = {
+float hide_network_buf[12][576] = {
 };
 
-float out_network_buf[10][10] = {
+float out_network_buf[10][12] = {
 };
 
-float target_mat[10][1] = {
-	0.01,0.91,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01
+float target_mat_0[10][1] = {
+	events,unevents,unevents,unevents,unevents,unevents,unevents,unevents,unevents,unevents
+};
+
+float target_mat_1[10][1] = {
+	unevents,events,unevents,unevents,unevents,unevents,unevents,unevents,unevents,unevents
+};
+
+float target_mat_7[10][1] = {
+	unevents,unevents,unevents,unevents,unevents,unevents,unevents,events,unevents,unevents
 };
 
 MatStr trainmat = f32MatInit(train_mat);
 MatStr hide_work = f32MatInit(hide_network_buf);
 MatStr out_work = f32MatInit(out_network_buf);
-MatStr targetmat = f32MatInit(target_mat);
+MatStr target_0 = f32MatInit(target_mat_0);
+MatStr target_1 = f32MatInit(target_mat_1);
+MatStr target_7 = f32MatInit(target_mat_7);
 
 int main(void)									
 {
 	/*matrix_ot test module*/
-	//voidmat0 = mat_create(4*8, 1, f32Flag);
-	//voidmat1 = mat_create(5, 5, f32Flag);
+	//voidmat0 = mat_create(5, 5, f32Flag);
+	//voidmat1 = mat_create(3, 2, f32Flag);
+
+	//mat_rand_normal(voidmat0);
+	//mat_mult_par(&tempmat, &multmat, voidmat1);
 
 	//printf("Test矩阵\n");
 	//mat_message(get(testmat));
@@ -74,21 +82,40 @@ int main(void)
 	//mat_message(voidmat1);
 	//output(voidmat1);
 
+	//while (1);
 	/*network test module*/
-	mat_assignment(&hide_work,0.5);		//初始化神经网络
-	mat_assignment(&out_work,0.5);
+	uint16_t i = NULL;
+	mat_rand_normal(&hide_work);		//初始化神经网络
+	mat_rand_normal(&out_work);
+	mat_tovector(model0_0, &trainmat);
+	back_propaga(&trainmat, &hide_work, &out_work, &target_0, leardpeed);		 //训练模型0_0
+	//forward_propaga(&trainmat,&hide_work,&out_work,&target_0);
+	for (i = 0; i < 100; ++i)
+	{
+		mat_tovector(model0_0, &trainmat);											//初始化标签0_0
+		back_propaga(&trainmat, &hide_work, &out_work, &target_0, leardpeed);		//训练模型0_0
 
-	mat_tovector(model, &trainmat);		//初始化标签
+		mat_tovector(model1, &trainmat);											//初始化标签1
+		back_propaga(&trainmat, &hide_work, &out_work, &target_1, leardpeed);		//训练模型1
 
-	back_propaga(&trainmat,&hide_work,&out_work,&targetmat,leardpeed);		//训练模型
+		mat_tovector(model7, &trainmat);											//初始化标签7
+		back_propaga(&trainmat, &hide_work, &out_work, &target_7, leardpeed);		//训练模型7
 
-	//printf("hide_work矩阵\n");
+		mat_tovector(model0_1, &trainmat);											//初始化标签0_1
+		back_propaga(&trainmat, &hide_work, &out_work, &target_0, leardpeed);		//训练模型0_1
+
+		mat_tovector(model0_2, &trainmat);											//初始化标签0_2
+		back_propaga(&trainmat, &hide_work, &out_work, &target_0, leardpeed);		//训练模型0_2
+
+		mat_tovector(model0_3, &trainmat);											//初始化标签0_3
+		back_propaga(&trainmat, &hide_work, &out_work, &target_0, leardpeed);		//训练模型0_3
+	}
+	//mat_assignment(&trainmat,1);
 	//mat_message(&hide_work);
-	////output(&hide_work);
-
-	//printf("out_work矩阵\n");
-	//mat_message(&out_work);
+	//output(&hide_work);
 	//output(&out_work);
+	mat_tovector(model1, &trainmat);
+	forward_propaga(&trainmat, &hide_work, &out_work, &target_0);
 
 	while (1);
 	return true;

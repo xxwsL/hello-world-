@@ -88,6 +88,8 @@ bool mat_load(MatStr *mat, uint16_t line, uint16_t row, uint16_t mattype, void *
 bool mat_proofread(const MatStr *mat_a, const MatStr *mat_b);
 //数组对应位转换相对应向量
 bool mat_tovector(const uint8_t *buf, MatStr *loadmat);
+//矩阵赋值似正态随机值
+bool mat_rand_normal(MatStr *mat);
 
 //求矩阵协方差
 MatStr* mat_cov(const MatStr *mat);
@@ -108,5 +110,11 @@ MatStr* mat_signmoid(const MatStr *mat);
 bool mat_signmoid_par(const MatStr *mat, MatStr *loadmat);
 //矩阵点乘and叉乘
 float f32mat_dotmult_par(const MatStr *mat_l,const MatStr *mat_r, MatStr *loadmat);
+//矩阵tanh函数化
+bool mat_tanh_par(const MatStr *mat, MatStr *loadmat);
+//矩阵relu函数化
+bool mat_relu_par(const MatStr *mat, MatStr *loadmat);
+//矩阵所有元素加上一个值
+bool mat_addto_value(MatStr *mat, const float value);
 
 #endif // ! _matrix_ot_h_
