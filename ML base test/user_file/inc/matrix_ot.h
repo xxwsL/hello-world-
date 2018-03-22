@@ -61,7 +61,7 @@ typedef struct MatrixStr {
 	//MatFistr function;
 }MatStr;
 
-extern MatFistr matfi;
+extern MatFistr mat_tf;
 
 //创建矩阵
 MatStr* mat_create(uint16_t mat_line, uint16_t mat_row, uint16_t mat_type);
@@ -116,5 +116,11 @@ bool mat_tanh_par(const MatStr *mat, MatStr *loadmat);
 bool mat_relu_par(const MatStr *mat, MatStr *loadmat);
 //矩阵所有元素加上一个值
 bool mat_addto_value(MatStr *mat, const float value);
+//矩阵softmax化
+bool mat_softmax(const MatStr *mat, MatStr *loadmat);
+//矩阵所有元素求和
+double mat_element_sum(const MatStr *mat);
+//矩阵softmax求导
+bool mat_softmax_der(MatStr *mat, MatStr *loadmat, uint32_t addr);
 
 #endif // ! _matrix_ot_h_

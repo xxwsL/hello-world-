@@ -3,7 +3,7 @@
 
 #include "xxwsL.h"
 
-#define e 2.718281
+#define e 2.718281f
 
 //signmoid函数
 float signmoid(float x);
@@ -17,5 +17,7 @@ float tanh_der(float x);
 float relu(float x);
 //relu函数求导
 float relu_der(float x);
+//自然对数e的幂
+float exp_pow(float x);
 
 #endif

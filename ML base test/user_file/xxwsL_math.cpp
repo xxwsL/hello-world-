@@ -8,14 +8,14 @@ float signmoid(float x)
 {
 	float temp=NULL;
 	if (x <= -14){
-		temp = 0.000001;
+		temp = 0.000001f;
 		return temp;
 	}
 	if (x >= 14) {
-		temp = 0.999999;
+		temp = 0.999999f;
 		return temp;
 	}
-	temp = (float)1/(1 + 1/pow(e, x));
+	temp = (float)(1/(1 + 1/pow(e, x)));
 	return temp;
 }
 
@@ -36,10 +36,10 @@ float signmoid_der(float x)
 float tanh_(float x)
 {
 	if (x <= -7) {
-		return  -0.999999;
+		return  -0.999999f;
 	}
 	if (x >= 7) {
-		return  0.999999;
+		return  0.999999f;
 	}
 	return (float)tanh(x);
 }
@@ -60,7 +60,7 @@ float tanh_der(float x)
 //return:float型数据
 float relu(float x)
 {
-	return (x > 0) ? x : 0;
+	return (x > 0) ? x : 0.0f;
 }
 
 
@@ -70,7 +70,7 @@ float relu(float x)
 //return:float型数据
 float relu_der(float x)
 {
-	return (x == 0) ? 0 : 1;
+	return (x == 0) ? 0.0f : 1.0f;
 }
 
 //优化次数:0
@@ -83,4 +83,14 @@ float rand_sum(uint32_t rands)
 	sum += (float)rand();
 	return sum;
 }
+
+//优化次数:0
+//自然对数e的幂
+//x:幂数
+//return:float数据
+float exp_pow(float x)
+{
+	return (float)pow(e,x);
+}
+
 

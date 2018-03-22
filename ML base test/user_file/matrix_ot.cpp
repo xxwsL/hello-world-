@@ -1,6 +1,6 @@
 #include "matrix_ot.h"
 
-MatFistr matfi = MatFiInit;
+MatFistr mat_tf = MatFiInit;
 
 //优化次数:4
 //输出float型矩阵
@@ -391,7 +391,7 @@ float mat_norm2(const MatStr *mat)
 	uint32_t mat_size=0;
 	uint32_t i=0;
 	float *f32add,norm2 = 0;
-	mat_size=matfi.mat_size(mat);
+	mat_size=mat_tf.mat_size(mat);
 	if (!mat) {
 		return false;
 	}
@@ -627,7 +627,7 @@ bool mat_message(const MatStr *mat)
 		return false;
 	}
 #ifdef Simulation
-	printf("矩阵存放地址 = %x\n", (int)mat->SaveAddr);
+	printf("矩阵存放地址 = %x\n", mat->SaveAddr);
 	if ((mat->flag&MatTypeFlag) == i16Flag) {
 		printf("矩阵类型 = int16_t\n");
 	}
@@ -944,7 +944,7 @@ bool mat_load(MatStr *mat,uint16_t line,uint16_t row, uint16_t mattype, void *sa
 //return:bool型标志位
 bool mat_proofread(const MatStr *mat_a, const MatStr *mat_b)
 {
-	if ((!mat_a) || (!mat_b))
+	if (!(mat_a&&mat_b))
 		return false;
 	if ((mat_a->line == mat_b->line) && (mat_a->row == mat_b->row))
 		return true;
@@ -991,7 +991,7 @@ float f32mat_dotmult_par(const MatStr *mat_l,const MatStr *mat_r,MatStr *loadmat
 //return:bool型标志
 bool mat_tovector(const uint8_t *buf,MatStr *loadmat)
 {
-	float l_value = 0.1f,r_value=0.0f;
+	float l_value = 0.0f,r_value=0.1f;
 	float *loadmatadd = NULL;
 	uint16_t j = NULL;
 	uint32_t i = NULL;
@@ -1047,32 +1047,16 @@ bool mat_tanh_par(const MatStr *mat, MatStr *loadmat)
 bool mat_relu_par(const MatStr *mat,MatStr *loadmat)
 {
 	uint16_t lines = NULL, rows = NULL;
-	int16_t *i16mat_add = NULL;
 	float *f32mat_add = NULL, *f32remat_add = NULL;
 	if (!mat_proofread(mat, loadmat))
 		return false;
 	f32remat_add = (float*)loadmat->SaveAddr;
-	switch (mat->flag&MatTypeFlag) {
-	case i16Flag:
-		i16mat_add = (int16_t*)mat->SaveAddr;
-		for (lines = 0; lines < mat->line; ++lines) {
-			for (rows = 0; rows < mat->row; ++rows) {
-				*(f32remat_add++) = relu((float)*(i16mat_add++));
-			}
-		}
-		break;
-	case f32Flag:
 		f32mat_add = (float*)mat->SaveAddr;
 		for (lines = 0; lines < mat->line; ++lines) {
 			for (rows = 0; rows < mat->row; ++rows) {
 				*(f32remat_add++) = relu(*(f32mat_add++));
 			}
 		}
-		break;
-	default:
-		return false;
-		break;
-	}
 	return true;
 }
 
@@ -1119,6 +1103,102 @@ bool mat_addto_value(MatStr *mat, const float value)
 	}
 	return true;
 }
+
+//优化次数:0
+//矩阵softmax化
+//mat:输入矩阵
+//loadmat:装载矩阵
+bool mat_softmax(const MatStr *mat,MatStr *loadmat) 
+{
+	uint32_t i = NULL, matszie = NULL;
+	float exp_pow_sum = NULL;
+	float *f32mat_add = NULL, *f32loadmat_add = NULL;
+	if (!mat_proofread(mat, loadmat))
+		return false;
+	matszie = mat_size(mat);
+	f32mat_add = (float*)mat->SaveAddr;
+	f32loadmat_add = (float*)loadmat->SaveAddr;
+	for (i = 0; i < matszie; ++i) {
+		f32loadmat_add[i] = exp_pow(f32mat_add[i]);
+		exp_pow_sum += f32loadmat_add[i];
+		}
+	for (i = 0; i < matszie; ++i) {
+		f32loadmat_add[i] /= exp_pow_sum;
+	}
+	return true;
+}
+
+//优化次数:0
+//矩阵s所有元素求和
+//mat:输入矩阵
+//return:double数据
+double mat_element_sum(const MatStr *mat)
+{
+	uint32_t i = NULL,matsize=NULL;
+	double sum = NULL;
+	float *f32mat_add = NULL;
+	if (!mat)
+		return false;
+	matsize = mat_size(mat);
+	f32mat_add = (float*)mat->SaveAddr;
+	for (i = 0; i < matsize; ++i) {
+			sum += (double)f32mat_add[i];
+		}
+	return sum;
+}
+
+//优化次数:0
+//矩阵softmax求导
+//mat:输入矩阵
+//loadmat:装载矩阵
+//addr:求导位置
+//return:bool标志位
+bool mat_softmax_der(MatStr *mat,MatStr *loadmat,uint32_t addr)
+{
+	uint32_t i = NULL, matsize = NULL;
+	float *mataddr = NULL, *loadmataddr = NULL;
+	if (mat_proofread(mat, loadmat)) {
+		return true;
+		mataddr = (float*)mat->SaveAddr;
+		loadmataddr = (float*)loadmat->SaveAddr;
+		matsize = mat_size(mat);
+		for (i = 0; i < matsize; ++i) {
+			loadmataddr[i] = (i == addr) ? (mataddr[i] - 1) : mataddr[i];
+		}
+		return true;
+	}
+	return false;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

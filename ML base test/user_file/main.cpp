@@ -26,8 +26,8 @@ StatusStr TestStatus;									//标志类
 MatStr testmat = i16MatInit(TestMatr);					//初始化信息包括矩阵地址，行数 ，列数
 MatStr tempmat = f32MatInit(TempMatr);	
 MatStr multmat = f32MatInit(MultMat);
-MatStr *voidmat0;		
-MatStr *voidmat1;
+MatStr *voidmat0=NULL;		
+MatStr *voidmat1=NULL;
 
 float train_mat[576][1] = {
 };
@@ -60,11 +60,8 @@ MatStr target_7 = f32MatInit(target_mat_7);
 int main(void)									
 {
 	/*matrix_ot test module*/
-	//voidmat0 = mat_create(5, 5, f32Flag);
+	//voidmat0 = mat_create(10, 1, f32Flag);,
 	//voidmat1 = mat_create(3, 2, f32Flag);
-
-	//mat_rand_normal(voidmat0);
-	//mat_mult_par(&tempmat, &multmat, voidmat1);
 
 	//printf("Test矩阵\n");
 	//mat_message(get(testmat));
@@ -87,35 +84,50 @@ int main(void)
 	uint16_t i = NULL;
 	mat_rand_normal(&hide_work);		//初始化神经网络
 	mat_rand_normal(&out_work);
-	mat_tovector(model0_0, &trainmat);
-	back_propaga(&trainmat, &hide_work, &out_work, &target_0, leardpeed);		 //训练模型0_0
-	//forward_propaga(&trainmat,&hide_work,&out_work,&target_0);
+
+	//sprintf(bmp_name, "%s", "0_0.bmp");
+	//bmp_r_tobuf(bmp_data, voidmodel, sizeof(voidmodel));
+	//mat_tovector(voidmodel, &trainmat);											//初始化标签1
+	//printf("test\n");
+	//forward_propaga(&trainmat, &hide_work, &out_work, &target_1);
+	//back_propaga(&trainmat, &hide_work, &out_work, &target_0, leardpeed);		//训练模型1
+
 	for (i = 0; i < 100; ++i)
 	{
-		mat_tovector(model0_0, &trainmat);											//初始化标签0_0
+		sprintf(bmp_name, "%s", "0_0.bmp");
+		bmp_r_tobuf(bmp_data, voidmodel, sizeof(voidmodel));
+		mat_tovector(voidmodel, &trainmat);											//初始化标签0_0
 		back_propaga(&trainmat, &hide_work, &out_work, &target_0, leardpeed);		//训练模型0_0
 
-		mat_tovector(model1, &trainmat);											//初始化标签1
+		sprintf(bmp_name, "%s", "1_0.bmp");
+		bmp_r_tobuf(bmp_data, voidmodel, sizeof(voidmodel));
+		mat_tovector(voidmodel, &trainmat);											//初始化标签1
 		back_propaga(&trainmat, &hide_work, &out_work, &target_1, leardpeed);		//训练模型1
 
-		mat_tovector(model7, &trainmat);											//初始化标签7
+		sprintf(bmp_name, "%s", "7_0.bmp");
+		bmp_r_tobuf(bmp_data, voidmodel, sizeof(voidmodel));
+		mat_tovector(voidmodel, &trainmat);											//初始化标签7
 		back_propaga(&trainmat, &hide_work, &out_work, &target_7, leardpeed);		//训练模型7
 
-		mat_tovector(model0_1, &trainmat);											//初始化标签0_1
+		sprintf(bmp_name, "%s", "0_1.bmp");
+		bmp_r_tobuf(bmp_data, voidmodel, sizeof(voidmodel));
+		mat_tovector(voidmodel, &trainmat);											//初始化标签0_1
 		back_propaga(&trainmat, &hide_work, &out_work, &target_0, leardpeed);		//训练模型0_1
 
-		mat_tovector(model0_2, &trainmat);											//初始化标签0_2
+		sprintf(bmp_name, "%s", "0_2.bmp");
+		bmp_r_tobuf(bmp_data, voidmodel, sizeof(voidmodel));
+		mat_tovector(voidmodel, &trainmat);											//初始化标签0_2
 		back_propaga(&trainmat, &hide_work, &out_work, &target_0, leardpeed);		//训练模型0_2
 
-		mat_tovector(model0_3, &trainmat);											//初始化标签0_3
+		sprintf(bmp_name, "%s", "0_3.bmp");
+		bmp_r_tobuf(bmp_data, voidmodel, sizeof(voidmodel));
+		mat_tovector(voidmodel, &trainmat);											//初始化标签0_3
 		back_propaga(&trainmat, &hide_work, &out_work, &target_0, leardpeed);		//训练模型0_3
 	}
-	//mat_assignment(&trainmat,1);
-	//mat_message(&hide_work);
-	//output(&hide_work);
-	//output(&out_work);
-	mat_tovector(model1, &trainmat);
-	forward_propaga(&trainmat, &hide_work, &out_work, &target_0);
+	sprintf(bmp_name, "%s", "1_0.bmp");
+	bmp_r_tobuf(bmp_data, voidmodel, sizeof(voidmodel));
+	mat_tovector(voidmodel, &trainmat);
+	forward_propaga(&trainmat, &hide_work, &out_work, &target_1);
 
 	while (1);
 	return true;
