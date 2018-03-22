@@ -4,7 +4,7 @@
 //signmoid函数
 //x:输入一个值x
 //return:float型数据
-float signmoid(float x) 
+float signmoid(const float x) 
 {
 	float temp=NULL;
 	if (x <= -14){
@@ -24,7 +24,7 @@ float signmoid(float x)
 //signmoid函数求导
 //x:输入
 //return:float型数据
-float signmoid_der(float x)
+float signmoid_der(const float x)
 {
 	return x*(1 - x);
 }
@@ -33,7 +33,7 @@ float signmoid_der(float x)
 //tanh函数
 //x:输入一个值x
 //return:float型数据
-float tanh_(float x)
+float tanh_(const float x)
 {
 	if (x <= -7) {
 		return  -0.999999f;
@@ -48,7 +48,7 @@ float tanh_(float x)
 //tanh函数求导
 //x:输入
 //return:float型数据
-float tanh_der(float x)
+float tanh_der(const float x)
 {
 	return 1-x*x;
 }

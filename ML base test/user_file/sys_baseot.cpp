@@ -19,6 +19,11 @@ bool bmp_r_tobuf(const char *bmpname,uint8_t *loadbuf, const uint32_t buf_size)
 	return true;
 }
 
+//优化次数:0
+//bmpifo:bmp信息表
+//loadbuf:装载buf
+//buf_size:buf大小(单位:字节)
+//fp:打开了bmp的文件指针
 bool bmp_alignment_r(const BITMAPINFOHEADER *bmpifo,uint8_t *loadbuf,const uint32_t buf_size,FILE *fp)
 {
 	uint8_t free_width=NULL;

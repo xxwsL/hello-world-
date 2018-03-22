@@ -117,10 +117,16 @@ bool mat_relu_par(const MatStr *mat, MatStr *loadmat);
 //矩阵所有元素加上一个值
 bool mat_addto_value(MatStr *mat, const float value);
 //矩阵softmax化
-bool mat_softmax(const MatStr *mat, MatStr *loadmat);
+bool mat_softmax_par(const MatStr *mat, MatStr *loadmat);
 //矩阵所有元素求和
 double mat_element_sum(const MatStr *mat);
 //矩阵softmax求导
-bool mat_softmax_der(MatStr *mat, MatStr *loadmat, uint32_t addr);
+bool mat_softmax_der(const MatStr *mat, MatStr *loadmat, const MatStr *target);
+//矩阵signmoid求导
+bool mat_signmoid_der(const MatStr *mat, MatStr *loadmat, const MatStr *target);
+//矩阵tanh求导
+bool mat_tanh_der(const MatStr *mat, MatStr *loadmat, const MatStr *target);
+//矩阵relu求导
+bool mat_relu_der(const MatStr *mat, MatStr *loadmat, const MatStr *target);
 
 #endif // ! _matrix_ot_h_

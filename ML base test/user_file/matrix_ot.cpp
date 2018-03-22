@@ -1108,7 +1108,7 @@ bool mat_addto_value(MatStr *mat, const float value)
 //矩阵softmax化
 //mat:输入矩阵
 //loadmat:装载矩阵
-bool mat_softmax(const MatStr *mat,MatStr *loadmat) 
+bool mat_softmax_par(const MatStr *mat,MatStr *loadmat) 
 {
 	uint32_t i = NULL, matszie = NULL;
 	float exp_pow_sum = NULL;
@@ -1147,29 +1147,128 @@ double mat_element_sum(const MatStr *mat)
 	return sum;
 }
 
-//优化次数:0
-//矩阵softmax求导
+//优化次数:2
+//矩阵softmax梯度
 //mat:输入矩阵
 //loadmat:装载矩阵
-//addr:求导位置
+//target:期望矩阵
 //return:bool标志位
-bool mat_softmax_der(MatStr *mat,MatStr *loadmat,uint32_t addr)
+bool mat_softmax_der(const MatStr *mat,MatStr *loadmat,const MatStr *target)
 {
+	uint8_t aim = NULL;
 	uint32_t i = NULL, matsize = NULL;
-	float *mataddr = NULL, *loadmataddr = NULL;
+	float *mataddr = NULL, *loadmataddr = NULL,*targetaddr=NULL;
 	if (mat_proofread(mat, loadmat)) {
-		return true;
 		mataddr = (float*)mat->SaveAddr;
 		loadmataddr = (float*)loadmat->SaveAddr;
-		matsize = mat_size(mat);
+		targetaddr = (float*)target->SaveAddr;
+		matsize = mat_size(target);
 		for (i = 0; i < matsize; ++i) {
-			loadmataddr[i] = (i == addr) ? (mataddr[i] - 1) : mataddr[i];
+			aim = (targetaddr[i]) ? i : aim;
+		}
+		for (i = 0; i < matsize; ++i) {
+			loadmataddr[i] = (aim==i) ? (mataddr[aim] - 1) : mataddr[aim];
 		}
 		return true;
 	}
 	return false;
 }
 
+//优化次数:1
+//矩阵signmoid求梯度
+//mat:输入矩阵
+//loadmat:装载矩阵
+//target:期望矩阵
+//return:bool标志位
+bool mat_signmoid_der(const MatStr *mat, MatStr *loadmat, const MatStr *target)
+{
+	uint32_t i = NULL, matsize = NULL;
+	float *mataddr = NULL, *loadmataddr = NULL, *targetaddr = NULL;
+	if (!target)
+	{
+		mataddr = (float*)mat->SaveAddr;
+		loadmataddr = (float*)loadmat->SaveAddr;
+		matsize = mat_size(mat);
+		for (i = 0; i < matsize; ++i) {
+			loadmataddr[i] = signmoid_der(mataddr[i]);
+		}
+	}
+	else if (mat_proofread(mat, loadmat)) {
+		mataddr = (float*)mat->SaveAddr;
+		loadmataddr = (float*)loadmat->SaveAddr;
+		targetaddr = (float*)target->SaveAddr;
+		matsize = mat_size(target);
+		for (i = 0; i < matsize; ++i) {
+			loadmataddr[i] = -(targetaddr[i]-mataddr[i])*signmoid_der(mataddr[i]);
+		}
+		return true;
+	}
+	return false;
+}
+
+//优化次数:1
+//矩阵tanh求梯度
+//mat:输入矩阵
+//loadmat:装载矩阵
+//target:期望矩阵
+//return:bool标志位
+bool mat_tanh_der(const MatStr *mat, MatStr *loadmat, const MatStr *target)
+{
+	uint32_t i = NULL, matsize = NULL;
+	float *mataddr = NULL, *loadmataddr = NULL, *targetaddr = NULL;
+	if (!target)
+	{
+		mataddr = (float*)mat->SaveAddr;
+		loadmataddr = (float*)loadmat->SaveAddr;
+		matsize = mat_size(mat);
+		for (i = 0; i < matsize; ++i) {
+			loadmataddr[i] = tanh_der(mataddr[i]);
+		}
+	}
+	else if (mat_proofread(mat, loadmat)) {
+		mataddr = (float*)mat->SaveAddr;
+		loadmataddr = (float*)loadmat->SaveAddr;
+		targetaddr = (float*)target->SaveAddr;
+		matsize = mat_size(target);
+		for (i = 0; i < matsize; ++i) {
+			loadmataddr[i] = -(targetaddr[i] - mataddr[i])*tanh_der(mataddr[i]);
+		}
+		return true;
+	}
+	return false;
+}
+
+//优化次数:1
+//矩阵relu求梯度
+//mat:输入矩阵
+//loadmat:装载矩阵
+//target:期望矩阵
+//return:bool标志位
+bool mat_relu_der(const MatStr *mat, MatStr *loadmat, const MatStr *target)
+{
+	uint32_t i = NULL, matsize = NULL;
+	float *mataddr = NULL, *loadmataddr = NULL, *targetaddr = NULL;
+	if (!target)
+	{
+		mataddr = (float*)mat->SaveAddr;
+		loadmataddr = (float*)loadmat->SaveAddr;
+		matsize = mat_size(mat);
+		for (i = 0; i < matsize; ++i) {
+			loadmataddr[i] = relu_der(mataddr[i]);
+		}
+	}
+	else if (mat_proofread(mat, loadmat)) {
+		mataddr = (float*)mat->SaveAddr;
+		loadmataddr = (float*)loadmat->SaveAddr;
+		targetaddr = (float*)target->SaveAddr;
+		matsize = mat_size(target);
+		for (i = 0; i < matsize; ++i) {
+			loadmataddr[i] = -(targetaddr[i] - mataddr[i])*relu_der(mataddr[i]);
+		}
+		return true;
+	}
+	return false;
+}
 
 
 
