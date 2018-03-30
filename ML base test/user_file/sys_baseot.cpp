@@ -60,3 +60,13 @@ bool bmp_alignment_r(const BITMAPINFOHEADER *bmpifo,uint8_t *loadbuf,const uint3
 		fread(loadbuf, 1, buf_size, fp);
 	return true;
 }
+
+//优化次数:0
+//随机数产生器初始化
+//void:无形参
+//return:返回bool标志位
+bool rand_init(void)
+{
+	srand((unsigned int)time(NULL));
+	return true;
+}

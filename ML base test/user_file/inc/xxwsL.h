@@ -8,8 +8,9 @@
 #include "malloc.h" 
 #include "math.h"
 #include "Windows.h"
+#include "time.h"
 
-//#include <iostream>
+#include <iostream>
 
 #include "xxwsL_status.h"
 
@@ -17,6 +18,7 @@
 #include "xxwsL_math.h"
 #include "network.h"
 #include "sys_baseot.h"
+#include "input_data.h"
 
 
 extern "C"

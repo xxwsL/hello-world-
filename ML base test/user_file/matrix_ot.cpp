@@ -1119,10 +1119,14 @@ bool mat_softmax_par(const MatStr *mat,MatStr *loadmat)
 	f32mat_add = (float*)mat->SaveAddr;
 	f32loadmat_add = (float*)loadmat->SaveAddr;
 	for (i = 0; i < matszie; ++i) {
+		if (f32loadmat_add[i] >= 86.0f)
+			f32loadmat_add[i] = 86.0f;
 		f32loadmat_add[i] = exp_pow(f32mat_add[i]);
 		exp_pow_sum += f32loadmat_add[i];
 		}
 	for (i = 0; i < matszie; ++i) {
+		//if (exp_pow_sum == 0)
+		//	exp_pow_sum = 1.0f;
 		f32loadmat_add[i] /= exp_pow_sum;
 	}
 	return true;
@@ -1167,7 +1171,7 @@ bool mat_softmax_der(const MatStr *mat,MatStr *loadmat,const MatStr *target)
 			aim = (targetaddr[i]) ? i : aim;
 		}
 		for (i = 0; i < matsize; ++i) {
-			loadmataddr[i] = (aim==i) ? (mataddr[aim] - 1) : mataddr[aim];
+			loadmataddr[i] = (aim==i) ? (mataddr[i] - 1) : mataddr[i];
 		}
 		return true;
 	}
@@ -1270,6 +1274,72 @@ bool mat_relu_der(const MatStr *mat, MatStr *loadmat, const MatStr *target)
 	return false;
 }
 
+
+//优化次数:0
+//矩阵交叉熵
+//l_mat:左矩阵
+//r_mat:右矩阵
+//return:float标志&有效数据
+float mat_cross_entropy_par(const MatStr *l_mat,const MatStr *r_mat)
+{
+	uint32_t i = NULL,matsize=NULL;
+	float *l_mataddr = NULL, *r_mataddr = NULL;
+	float re_temp = NULL;
+	if (!mat_proofread(l_mat, r_mat))
+		return false;
+	matsize = mat_size(l_mat);
+	l_mataddr = (float*)l_mat->SaveAddr; r_mataddr = (float*)r_mat->SaveAddr;
+	for (i = 0; i < matsize; ++i) {
+		re_temp -= l_mataddr[i] * log(r_mataddr[i]);
+	}
+	return re_temp;
+}
+
+
+//优化次数:0
+//mat:输入矩阵
+//return:返回float标志&有效数据
+float mat_maxelement(const MatStr *mat)
+{
+	float max = NULL, *mataddr = NULL;
+	uint32_t matsize = NULL,i=NULL;
+	if (!mat)
+		return false;
+	mataddr = (float*)mat->SaveAddr;
+	matsize = mat_size(mat);
+	for(;i<matsize;++i){
+		max = (mataddr[i] > max) ? mataddr[i] : max;
+	}
+	return max;
+}
+
+//优化次数:0
+//矩阵softmax化
+//mat:输入矩阵
+//loadmat:装载矩阵
+bool mat_softmax_submax_par(const MatStr *mat, MatStr *loadmat)
+{
+	uint32_t i = NULL, matszie = NULL;
+	float exp_pow_sum = NULL,element_max=NULL;
+	float *f32mat_add = NULL, *f32loadmat_add = NULL;
+	if (!mat_proofread(mat, loadmat))
+		return false;
+	matszie = mat_size(mat);
+	f32mat_add = (float*)mat->SaveAddr;
+	f32loadmat_add = (float*)loadmat->SaveAddr;
+	element_max = mat_maxelement(mat);
+	for (i = 0; i < matszie; ++i) {
+		f32mat_add[i] -= element_max;
+		f32loadmat_add[i] = exp_pow(f32mat_add[i]);
+		exp_pow_sum += f32loadmat_add[i];
+	}
+	for (i = 0; i < matszie; ++i) {
+		//if (exp_pow_sum == 0)
+		//	exp_pow_sum = 1.0f;
+		f32loadmat_add[i] /= exp_pow_sum;
+	}
+	return true;
+}
 
 
 
