@@ -90,6 +90,8 @@ bool mat_proofread(const MatStr *mat_a, const MatStr *mat_b);
 bool mat_tovector(const uint8_t *buf, MatStr *loadmat);
 //矩阵赋值似正态随机值
 bool mat_rand_normal(MatStr *mat);
+//矩阵上下翻转
+bool f32mat_up_down_change(MatStr *mat);
 
 //求矩阵协方差
 MatStr* mat_cov(const MatStr *mat);
@@ -129,10 +131,12 @@ bool mat_tanh_der(const MatStr *mat, MatStr *loadmat, const MatStr *target);
 //矩阵relu求导
 bool mat_relu_der(const MatStr *mat, MatStr *loadmat, const MatStr *target);
 //矩阵交叉熵
-float mat_cross_entropy_par(const MatStr *l_mat, const MatStr *r_mat);
+float mat_cross_entropy(const MatStr *l_mat, const MatStr *r_mat);
 //矩阵最大值元素
 float mat_maxelement(const MatStr *mat);
 //偏置矩阵max元素的softmax
 bool mat_softmax_submax_par(const MatStr *mat, MatStr *loadmat);
+//平方损失函数
+float mat_square_loss(const MatStr *mat, const MatStr *target);
 
 #endif // ! _matrix_ot_h_

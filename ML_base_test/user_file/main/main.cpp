@@ -44,14 +44,15 @@ int main(void)
 	//printf("tempmatæÿ’Û");
 	//mat_message(&tempmat);
 	//output(&tempmat);
-
 	//while (1);
 	/*network test module*/
 	//printf("%f\n",exp_pow(86)*10);
 	TrStr tr;
+	MatStr *layer[3] = {&hide_work,&out_work,NULL};
+	uint8_t trfi[4] = { relu_active ,softmax_active ,NULL ,sqaure_loss };
 	long time_start = NULL, time_end = NULL;
 	rand_init();
-	Train_init(&tr, &hide_work, &out_work,target_set,tr_message, relu_active, softmax_active);
+	Train_init(&tr, layer,target_set,tr_message, trfi);
 	time_start = clock();
 	for (i = 0; i < 330; ++i) {
 		Train_start("D:\\work\\ML\\ML_base\\simaple\\set_data\\set0\\0", rand() % 10, &tr);
@@ -70,7 +71,9 @@ int main(void)
 	time_end = clock();
 	time_end -= time_start;
 	printf("—µ¡∑ ±º‰ = %ld h %ld m %ld s %ld ms\n", time_end / 3600000l, time_end % 3600000l / 60000l, time_end % 60000l / 1000l, time_end % 1000l);
-	train_test("D:\\work\\ML\\ML_base\\simaple\\set_data\\set0\\0", 5, &tr);
+	train_test("D:\\work\\ML\\ML_base\\simaple\\test_set\\test0_", 0, &tr);
+	train_test("D:\\work\\ML\\ML_base\\simaple\\test_set\\test1_", 0, &tr);
+	echo_f32buf_to_txt("D:\\work\\ML\\ML_base\\simaple\\demo.txt", (float*)tr.layer[0]->SaveAddr, 576*12);
 	while (1);
 	return true;
 }

@@ -70,3 +70,24 @@ bool rand_init(void)
 	srand((unsigned int)time(NULL));
 	return true;
 }
+
+//优化次数:0
+//打印f32buf到txt
+//path:txt路劲
+//buf:需打印的buf
+//buf_size:buf的大小
+//return:bool标志
+bool echo_f32buf_to_txt(const char *path,float *buf,uint32_t buf_size)
+{
+	uint32_t i = NULL;
+	FILE *fp = NULL;
+	fopen_s(&fp,path,"w");
+	for (i = 0; i < buf_size; ++i) {
+		if (!(i % 8))
+			fprintf_s(fp, "\n");
+		fprintf_s(fp, "%f,",buf[i]);
+	}
+	fprintf_s(fp, "\n\n");
+	fclose(fp);
+	return true;
+}

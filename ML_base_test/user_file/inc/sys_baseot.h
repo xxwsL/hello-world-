@@ -8,6 +8,8 @@ bool bmp_r_tobuf(const char *bmpname, uint8_t *loadbuf, const uint32_t buf_size)
 bool bmp_alignment_r(const BITMAPINFOHEADER *bmpifo, uint8_t *loadbuf, const unsigned int buf_size, FILE *fp);
 //随机数产生器初始化
 bool rand_init(void);
+//打印buf到txt文件
+bool echo_f32buf_to_txt(const char *path, float *buf, uint32_t buf_size);
 
 #endif
 

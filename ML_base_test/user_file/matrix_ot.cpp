@@ -627,7 +627,7 @@ bool mat_message(const MatStr *mat)
 		return false;
 	}
 #ifdef Simulation
-	printf("矩阵存放地址 = %x\n", mat->SaveAddr);
+	printf("矩阵存放地址 = %p\n", mat->SaveAddr);
 	if ((mat->flag&MatTypeFlag) == i16Flag) {
 		printf("矩阵类型 = int16_t\n");
 	}
@@ -783,7 +783,7 @@ MatStr* mat_sub(const MatStr *mat_a, const MatStr *mat_b)
 	return remat;
 }
 
-//优化次数:0
+//优化次数:1
 //矩阵减法
 //q_mat:左减float矩阵a
 //r_mat:右减float矩阵b
@@ -793,16 +793,14 @@ bool mat_sub_par(const MatStr *mat_a, const MatStr *mat_b,MatStr *loadmat)
 {
 	uint32_t i = NULL, matsize = NULL;
 	float *f32mata_add = NULL, *f32matb_add = NULL, *f32remat_add;
-	if ((!mat_a) || (!mat_b)||(!loadmat))
-		return false;
-	if ((mat_a->line != mat_b->line) || (mat_a->row != mat_b->row))
+	if (mat_proofread(mat_a,mat_b))
 		return false;
 	matsize = mat_size(mat_a);
 	f32mata_add = (float*)mat_a->SaveAddr;
 	f32matb_add = (float*)mat_b->SaveAddr;
 	f32remat_add = (float*)loadmat->SaveAddr;
 	for (i = 0; i <matsize; ++i) {
-		*(f32remat_add + i) = *(f32mata_add + i) - (*(f32matb_add + i));
+		f32remat_add[i] = f32mata_add[i] - f32matb_add[i];
 	}
 	return true;
 }
@@ -1067,19 +1065,19 @@ bool mat_relu_par(const MatStr *mat,MatStr *loadmat)
 bool mat_rand_normal(MatStr *mat)
 {
 	float *f32add = NULL,temp=NULL,tempsum=NULL;
-	uint32_t i = 0, mat_size = 0;
+	uint32_t i = 0, matsize = 0;
 	if (!mat) {			//矩阵地址和大小不能为0
 		return false;
 	}
-	mat_size = mat->line*mat->row;
+	matsize = mat_size(mat);
 	f32add = (float*)mat->SaveAddr;
-		for (i = 0; i < mat_size; ++i) {
+		for (i = 0; i < matsize; ++i) {
 			temp = (float)rand();
 			tempsum += temp;
-			*(f32add + i) = temp;
+			f32add[i] = temp;
 		}
 		temp = tempsum / i;
-		for (i = 0; i < mat_size; ++i) {
+		for (i = 0; i < matsize; ++i) {
 			f32add[i] = (f32add[i]-temp)/tempsum*100;
 		}
 	return true;
@@ -1275,22 +1273,22 @@ bool mat_relu_der(const MatStr *mat, MatStr *loadmat, const MatStr *target)
 }
 
 
-//优化次数:0
+//优化次数:1
 //矩阵交叉熵
-//l_mat:左矩阵
-//r_mat:右矩阵
+//mat:输入矩阵
+//target:期望矩阵
 //return:float标志&有效数据
-float mat_cross_entropy_par(const MatStr *l_mat,const MatStr *r_mat)
+float mat_cross_entropy(const MatStr *mat,const MatStr *target)
 {
 	uint32_t i = NULL,matsize=NULL;
-	float *l_mataddr = NULL, *r_mataddr = NULL;
+	float *mataddr = NULL, *targetaddr = NULL;
 	float re_temp = NULL;
-	if (!mat_proofread(l_mat, r_mat))
-		return false;
-	matsize = mat_size(l_mat);
-	l_mataddr = (float*)l_mat->SaveAddr; r_mataddr = (float*)r_mat->SaveAddr;
+	if (!mat_proofread(mat, target))
+		return error;
+	matsize = mat_size(mat);
+	mataddr = (float*)mat->SaveAddr; targetaddr = (float*)target->SaveAddr;
 	for (i = 0; i < matsize; ++i) {
-		re_temp -= l_mataddr[i] * log(r_mataddr[i]);
+		re_temp -= targetaddr[i] * log(mataddr[i]);
 	}
 	return re_temp;
 }
@@ -1340,6 +1338,54 @@ bool mat_softmax_submax_par(const MatStr *mat, MatStr *loadmat)
 	}
 	return true;
 }
+
+//优化次数:0
+//平方损失函数
+//mat:输入矩阵
+//target:期望矩阵
+//return:float标志&有效数据
+float mat_square_loss(const MatStr *mat, const MatStr *target)
+{
+	uint32_t i = NULL, matsize = NULL;
+	float *mataddr = NULL, *targetaddr = NULL;
+	float re_temp = NULL;
+	if (!mat_proofread(mat, target))
+		return error;
+	matsize = mat_size(mat);
+	mataddr = (float*)mat->SaveAddr; targetaddr = (float*)target->SaveAddr;
+	for (i = 0; i < matsize; ++i) {
+		re_temp += (float)pow(mataddr[i] - targetaddr[i], 2);
+	}
+	return re_temp;
+}
+
+//优化次数:0
+//矩阵数据上下翻转
+//mat:矩阵类
+bool f32mat_up_down_change(MatStr *mat)
+{
+	uint16_t i = NULL, j = NULL, change_lines = NULL;
+	uint32_t up_line_offset = NULL,down_line_offset=NULL;
+	float *mataddr = NULL,temp=NULL;
+	if (!mat)
+		return false;
+	//矩阵数据域指针赋值
+	mataddr = (float*)mat->SaveAddr;
+	//实际需要执行交换的行次数
+	change_lines = mat->line / 2;
+	down_line_offset = (mat->line - 1)*mat->row;
+	for (i = 0; i < change_lines;++i) {
+		for (j = 0; j < mat->row; ++j) {
+			temp = mataddr[up_line_offset + j];
+			mataddr[up_line_offset + j] = mataddr[down_line_offset+j];
+			mataddr[down_line_offset + j] = temp;
+		}
+		up_line_offset += mat->row;
+		down_line_offset -= mat->row;
+	}
+	return true;
+}
+
 
 
 
