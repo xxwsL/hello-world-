@@ -53,7 +53,7 @@ uint8_t train_buf[train_size];
 //}
 
 
-bool back_propaga(TrStr *tr)
+bool back_propaga(ms *tr)
 {
 	uint16_t update = NULL;
 	float error_total = NULL;
@@ -63,7 +63,7 @@ bool back_propaga(TrStr *tr)
 			printf("模型训练完成\n");
 			break;
 		}
-		mlp_der(tr); output(tr->der_mat[1]);
+		mlp_der(tr); 
 		update_all_layer(tr);				
 		printf("迭代次数 = %d\n\n", update++);
 	}
@@ -74,31 +74,22 @@ bool back_propaga(TrStr *tr)
 //前向传播
 //tr:训练类
 //return:bool标志位
-float forward_propaga(TrStr *tr)
+float forward_propaga(ms *tr)
 {
 
 	float error_total = NULL;
-	uint8_t networks = NULL;
-	networks = (uint8_t)tr->tr_message[5];
-	if (networks >= 0) {
-		mat_mult_par(tr->layer[0], tr->train_mat, tr->outmat[0]);
-		mat_addto_value(tr->outmat[0], tr->tr_message[0]);							//output(tr->outmat[0]);printf("\n");		//debug outmat[0]
-		tr->active_fi[0](tr->outmat[0], tr->outmat[0]);								//output(tr->outmat[0]);printf("\n");		//debug outmat[0]
-		if (tr->tr_message[5] >= 1) {
-			mat_mult_par(tr->layer[1], tr->outmat[0], tr->outmat[1]);				//output(tr->outmat[1]); printf("\n");		//debug outmat[1]		
-			mat_addto_value(tr->outmat[1], tr->tr_message[1]);
-			tr->active_fi[1](tr->outmat[1], tr->outmat[1]);
-			if (tr->tr_message[5] >= 2) {
-				mat_mult_par(tr->layer[2], tr->outmat[1], tr->outmat[2]);			//output(tr->outmat[1]); printf("\n");		//debug outmat[1]		
-				mat_addto_value(tr->outmat[2], tr->tr_message[2]);
-				tr->active_fi[1](tr->outmat[2], tr->outmat[2]);
-			}
-		}
+	uint16_t networks = NULL,i=NULL;
+	networks = tr->mlp_message[0];
+	mat_mult_par(tr->layer[0], tr->train_mat, tr->outmat[0]);
+	mat_addto_value(tr->outmat[0], tr->op_set[1]);							
+	tr->active_fi[0](tr->outmat[0], tr->outmat[0]);
+	for (i = 1; i <= networks;++i) {
+		mat_mult_par(tr->layer[i], tr->outmat[i-1], tr->outmat[i]);						
+		mat_addto_value(tr->outmat[i], tr->op_set[i+1]);
+		tr->active_fi[1](tr->outmat[i], tr->outmat[i]);
 	}
-	else {
-		return error;
-	}
-	output(tr->outmat[networks]);													//打印测试
+	//打印测试
+	output(tr->outmat[networks]);													
 	error_total = tr->loss_fi(tr->outmat[networks], tr->target_load);
 	printf("误差 = %f\n", error_total);
 	return error_total;
@@ -123,7 +114,7 @@ bool error_analysis(float error_value)
 //train_buf:训练样本容器buf
 //train_size:容器大小
 //tr:训练类
-bool Train_start(const char *simaple_file,const uint32_t i,TrStr *tr)
+bool Train_start(const char *simaple_file,const uint32_t i,ms *tr)
 {
 	char bmp_data[100] = {};
 	char bmp_name[9] = {};
@@ -167,7 +158,7 @@ bool Train_start(const char *simaple_file,const uint32_t i,TrStr *tr)
 	return true;
 }
 
-//优化次数:2
+//优化次数:4
 //训练初始化
 //tr:训练类
 //layer:全链接层集
@@ -175,122 +166,40 @@ bool Train_start(const char *simaple_file,const uint32_t i,TrStr *tr)
 //tr_message:训练模型类的信息头
 //tr_fi:训练模型激活函数&求导函数集
 //return:bool标志位
-bool Train_init(TrStr *tr,MatStr **layer,MatStr **target_set,float *tr_message,const uint8_t *tr_fi)
+bool Train_init(ms *tr,MatStr **layer,MatStr **target_set,float *op_set,uint16_t *mlp_message_buf,active_fi_str(fi))
 {
-	uint8_t i = NULL;
+	int16_t i = NULL;
 	//初始化输入矩阵mat
 	tr->train_mat = mat_create(layer[0]->row,1,f32Flag);
 	//初始化连接层
-	tr->layer[0] = layer[0];
-	tr->layer[1] = layer[1];
-	tr->layer[2] = layer[2];
-	//初始化tr类信息
-	tr->tr_message = tr_message;
-	//初始化输出层 & 以似正态分布随机数初始化连接层参数
-	if (tr_message[5] >= 0) {
-		tr->outmat[0] = mat_create(layer[0]->line, tr->train_mat->row, f32Flag);
-		mat_rand_normal(tr->layer[0]);
-		//初始化layer[0]激活函数
-		switch (tr_fi[0]) {
-			case signmoid_active:
-				tr->active_fi[0] = mat_signmoid_par;
-				tr->active_fid[0] = mat_signmoid_der;
-				break;
-			case tanh_active:
-				tr->active_fi[0] = mat_tanh_par;
-				tr->active_fid[0] = mat_tanh_der;
-				break;
-			case relu_active:
-				tr->active_fi[0] = mat_relu_par;
-				tr->active_fid[0] = mat_relu_der;
-				break;
-			case softmax_active:
-				//tr->active_fi[1] = mat_softmax_par;
-				tr->active_fi[0] = mat_softmax_submax_par;
-				tr->active_fid[0] = mat_softmax_der;
-				break;
-			default:
-				tr->active_fi[0] = NULL;
-				tr->active_fid[0] = NULL; 
-				break;
-		}
-		//初始化输出误差[0]矩阵
-		tr->der_mat[0] = mat_create(tr->outmat[0]->line, tr->outmat[0]->row, f32Flag);
-		if (tr_message[5] >= 1) {
-			tr->outmat[1] = mat_create(layer[1]->line, tr->outmat[0]->row, f32Flag);
-			mat_rand_normal(tr->layer[1]);
-			//初始化layer[1]激活函数
-			switch (tr_fi[1]) {
-				case signmoid_active:
-					tr->active_fi[1] = mat_signmoid_par;
-					tr->active_fid[1] = mat_signmoid_der;
-					break;
-				case tanh_active:
-					tr->active_fi[1] = mat_tanh_par;
-					tr->active_fid[1] = mat_tanh_der;
-					break;
-				case relu_active:
-					tr->active_fi[1] = mat_relu_par;
-					tr->active_fid[1] = mat_relu_der;
-					break;
-				case softmax_active:
-					//tr->active_fi[1] = mat_softmax_par;
-					tr->active_fi[1] = mat_softmax_submax_par;
-					tr->active_fid[1] = mat_softmax_der;
-					break;
-				default:
-					tr->active_fi[1] = NULL;
-					tr->active_fid[1] = NULL;
-					break;
-			}
-			//初始化输出误差[1]矩阵
-			tr->der_mat[1] = mat_create(tr->outmat[1]->line, tr->outmat[1]->row, f32Flag);
-			if (tr_message[5] >= 2) {
-				tr->outmat[2] = mat_create(layer[2]->line, tr->outmat[2]->row, f32Flag);
-				mat_rand_normal(tr->layer[2]);
-				//初始化layer[2]激活函数
-				switch (tr_fi[2]) {
-					case signmoid_active:
-						tr->active_fi[2] = mat_signmoid_par;
-						tr->active_fid[2] = mat_signmoid_der;
-						break;
-					case tanh_active:
-						tr->active_fi[2] = mat_tanh_par;
-						tr->active_fid[2] = mat_tanh_der;
-						break;
-					case relu_active:
-						tr->active_fi[2] = mat_relu_par;
-						tr->active_fid[2] = mat_relu_der;
-						break;
-					case softmax_active:
-						//tr->active_fi[2] = mat_softmax_par;
-						tr->active_fi[2] = mat_softmax_submax_par;
-						tr->active_fid[2] = mat_softmax_der;
-						break;
-					default:
-						tr->active_fi[2] = NULL;
-						tr->active_fid[2] = NULL;
-						break;
-				}
-				//初始化输出误差[2]矩阵
-				tr->der_mat[2] = mat_create(tr->outmat[2]->line, tr->outmat[2]->row, f32Flag);
-			}
-		}
+	tr->layer = layer;
+	//初始化算子
+	tr->op_set = op_set;
+	//初始化算子
+	tr->active_fi = fi;
+	//初始化mlp信息
+	tr->mlp_message = mlp_message_buf;
+	//初始化输出层 & 用正态分部随机数初始化隐藏层 & 初始化微分层
+	tr->outmat = mat_vetor_create(tr->mlp_message[0] + 1);
+	tr->der_mat = mat_vetor_create(tr->mlp_message[0] + 1);
+	for(i = tr->mlp_message[0];i>=0;--i){
+		tr->outmat[i] = mat_create(layer[i]->line, 1, f32Flag);
+		mat_rand_normal(tr->layer[i]);
+		tr->der_mat[i] = mat_create(tr->outmat[i]->line, 1, f32Flag);
 	}
-	else {
-		return false;
-	}
-	switch (tr_fi[3]) {
+	//初始化标签集
+	tr->target_set = target_set;
+	//初始化损失函数
+	switch (tr->mlp_message[2]){
 		case sqaure_loss:
 			tr->loss_fi = mat_square_loss;
 			break;
 		case cross_entropy:
 			tr->loss_fi = mat_cross_entropy;
 			break;
-		default:break;
+	default:return false;
+		break;
 	}
-	//初始化标签集
-	tr->target_set = target_set;
 	return true;
 }
 
@@ -299,7 +208,7 @@ bool Train_init(TrStr *tr,MatStr **layer,MatStr **target_set,float *tr_message,c
 //simaple_file:输入样本文件地址
 //i:样本编号
 //tr:训练类
-bool train_test(const char *simaple_file,const uint32_t i,TrStr *tr)
+bool train_test(const char *simaple_file,const uint32_t i,ms *tr)
 {
 	char bmp_data[100] = {};
 	char bmp_name[9] = {};
@@ -346,23 +255,25 @@ bool train_test(const char *simaple_file,const uint32_t i,TrStr *tr)
 //各个连接层微分算子
 //tr:训练模型类
 //rreturn:bool标志位
-bool mlp_der(TrStr *tr) 
+bool mlp_der(ms *tr) 
 {
-	uint8_t i = NULL, mlps = NULL,mlp_l=NULL,mlp_r=NULL;
+	uint16_t i = NULL, mlps = NULL,mlp_l=NULL,mlp_r=NULL;
 	uint16_t j = NULL, k = NULL, mlps_temp0 = NULL, mlps_temp1 = NULL;
 	uint32_t line_offset = NULL;
 	float *der_mataddr = NULL, *r_mlpaddr = NULL,*mlp_waddr=NULL;
 	float temp_sum = NULL;
-	mlps = (uint8_t)tr->tr_message[5];
+	mlps = (uint16_t)tr->mlp_message[0];
 	//最后输出层微分算子
-	tr->active_fid[mlps](tr->outmat[mlps], tr->der_mat[mlps], tr->target_load);
+	auto_load_active_fd(mlps, tr);
+	tr->active_fid(tr->outmat[mlps], tr->der_mat[mlps], tr->target_load);
 	//除最后一层还需微分的层数
 	for (i=1; i <= mlps;++i) {
 		//确定微分层的元素个数及数据地址赋值
 		mlp_l = mlps - i;
 		mlps_temp0 = tr->outmat[mlp_l]->line;
 		//对各个输出层求导
-		tr->active_fid[mlp_l](tr->outmat[mlp_l],tr->der_mat[mlp_l],NULL);
+		auto_load_active_fd(mlp_l, tr);
+		tr->active_fid(tr->outmat[mlp_l],tr->der_mat[mlp_l],NULL);
 		der_mataddr = (float*)tr->der_mat[mlp_l]->SaveAddr;
 		//确定微分算子层元素个数及地址赋值
 		mlp_r = mlps - i + 1;
@@ -387,10 +298,10 @@ bool mlp_der(TrStr *tr)
 //优化次数:0
 //更新全部连接层权重
 //tr:训练模型类
-bool update_all_layer(TrStr *tr)
+bool update_all_layer(ms *tr)
 {
 	uint8_t mlps = NULL,i=NULL;
-	mlps = (uint8_t)tr->tr_message[5];
+	mlps = (uint8_t)tr->mlp_message[0];
 	update_layer(tr->layer[0],tr->der_mat[0],tr->train_mat,tr);
 	for (i = 1; i <= mlps;++i) {
 		update_layer(tr->layer[i],tr->der_mat[i],tr->outmat[i-1],tr);
@@ -404,7 +315,7 @@ bool update_all_layer(TrStr *tr)
 //der_mat:更新权重对象对应的微分层
 //o_mat:更新权重对象对应的影响层
 //tr:训练模型类
-bool update_layer(MatStr *update_mat,const MatStr *der_mat,const MatStr *o_mat,TrStr *tr)
+bool update_layer(MatStr *update_mat,const MatStr *der_mat,const MatStr *o_mat,ms *tr)
 {
 	uint16_t i = NULL,j=NULL;
 	uint32_t line_offset = NULL;
@@ -414,14 +325,31 @@ bool update_layer(MatStr *update_mat,const MatStr *der_mat,const MatStr *o_mat,T
 	o_mataddr = (float*)o_mat->SaveAddr;
 	for (i = 0; i < der_mat->line;++i) {
 		for (j = 0; j < update_mat->row;++j) {
-			update_mataddr[line_offset + j] -= tr->tr_message[3] * der_mataddr[i] * o_mataddr[j];
+			update_mataddr[line_offset + j] -= tr->op_set[0] * der_mataddr[i] * o_mataddr[j];
 		}
 		line_offset += update_mat->row;
 	}
 	return true;
 }
 
-
+//优化次数:0
+//自动装载求导函数
+//i:输出层对应层数
+//tr:全链接网络类
+bool auto_load_active_fd(uint16_t i,ms *tr)
+{
+	if ((uint64_t)tr->active_fi[i] == (uint64_t)mat_signmoid_par)
+		tr->active_fid = signmoid_fd;
+	else if ((uint64_t)tr->active_fi[i] == (uint64_t)mat_tanh_par)
+		tr->active_fid = tanh_fd;
+	else if ((uint64_t)tr->active_fi[i] == (uint64_t)mat_relu_par)
+		tr->active_fid = relu_fd;
+	else if ((uint64_t)tr->active_fi[i] == (uint64_t)mat_softmax_par)
+		tr->active_fid = softmax_fd;
+	else
+		return false;
+	return true;
+}
 
 
 

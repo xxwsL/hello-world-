@@ -10,7 +10,8 @@
 #define nextworks 1
 
 //network test date
-float tr_message[6] = {bias0,bias1,bias2,leardpeed,samples,nextworks};
+float op_set[] = { learmspeed,bias0,bias1,bias2 };
+uint16_t mlp_message_buf[] = { nextworks,samples,cross_entropy };
 
 
 float hide_network_buf[12][576] = {

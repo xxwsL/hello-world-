@@ -156,7 +156,7 @@ MatStr* mat_cut(const MatStr *mat,uint16_t cut_line_size, uint16_t cut_row_size,
 //行数:样本个数(样本个数大于1),列数:样本维度
 //mat:输入矩阵
 //
-MatStr* mat_cov(const MatStr *mat)
+MatStr* mat_covar(const MatStr *mat)
 {
 	uint16_t i = 0, j = 0,k=0;
 	int16_t *i16mat_add;
@@ -1386,7 +1386,18 @@ bool f32mat_up_down_change(MatStr *mat)
 	return true;
 }
 
-
+//优化次数:0
+//创建矩阵容器
+//vetor_len:容器深度
+//vetor:容器名称
+MatStr** mat_vetor_create(uint16_t vetor_len)
+{
+	MatStr *pointer;
+#ifdef Simulation
+	return (MatStr**)malloc(vetor_len*sizeof(pointer));
+#endif 
+	return false;
+}
 
 
 

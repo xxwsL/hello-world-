@@ -26,12 +26,18 @@
 //矩阵可执行函数
 #define MatInit mat_create,mat_delete
 #define MatDeal output,mat_cut,mat_assignment,mat_zero,mat_size,mat_message
-#define MatMath mat_cov,mat_norm2,mat_mult	
+#define MatMath mat_covar,mat_norm2,mat_mult	
 #define MatFiInit {MatInit,MatDeal,MatMath}
 
 //矩阵初始化宏
 #define i16MatInit(MatName) {i16MatrixAdd(MatName),i16MatrixMessage(MatName)}
 #define f32MatInit(MatName) {f32MatrixAdd(MatName),f32MatrixMessage(MatName)}
+
+//激活函数buf宏
+#define active_fi_str(active_fi) bool (**active_fi) (const MatrixStr *mat, MatrixStr *loadmat)
+#define active_fi_buf(active_fi,n) bool (*active_fi[n]) (const MatrixStr *mat, MatrixStr *loadmat)
+
+//
 
 typedef struct MatFunction {
 
@@ -45,7 +51,7 @@ typedef struct MatFunction {
 	uint32_t (*mat_size) (const struct MatrixStr *mat);
 	bool (*mat_message) (const struct MatrixStr *mat);
 	//矩阵运算函数
-	struct MatrixStr* (*mat_cov) (const struct MatrixStr *mat);
+	struct MatrixStr* (*mat_covar) (const struct MatrixStr *mat);
 	float (*mat_norm2) (const struct MatrixStr *mat);
 	struct MatrixStr* (*mat_mult) (const struct MatrixStr *mat_l, const struct MatrixStr *mat_r);	//矩阵初始化函数
 }MatFistr;
@@ -67,6 +73,8 @@ extern MatFistr mat_tf;
 MatStr* mat_create(uint16_t mat_line, uint16_t mat_row, uint16_t mat_type);
 //释放矩阵
 bool mat_delete(MatStr *mat);
+//创建张量
+MatStr** mat_vetor_create(uint16_t vetor_len);
 
 //矩阵已制表形式输出
 bool output(const MatStr *mat);
@@ -94,7 +102,7 @@ bool mat_rand_normal(MatStr *mat);
 bool f32mat_up_down_change(MatStr *mat);
 
 //求矩阵协方差
-MatStr* mat_cov(const MatStr *mat);
+MatStr* mat_covar(const MatStr *mat);
 //求向量矩阵二范数
 float mat_norm2(const MatStr *mat);
 //矩阵相乘

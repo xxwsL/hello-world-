@@ -20,6 +20,8 @@
 #include "sys_baseot.h"
 #include "input_data.h"
 
+#include "cnn.h"
+
 
 extern "C"
 {
