@@ -7,8 +7,8 @@
 //target_set:训练期望标签集
 //tr_message:训练模型类的信息头
 //tr_fi:训练模型激活函数&求导函数集
-//return:int标志位
-int mlp_init(mlpstr *mlp, float op, active_fi_str(fi), TensorStr *layer)
+//return:bool标志位
+bool mlp_init(mlpstr *mlp, float op, active_fi_str(fi), TensorStr *layer)
 {
 	int16_t i = NULL;
 	//初始化连接层
@@ -24,16 +24,16 @@ int mlp_init(mlpstr *mlp, float op, active_fi_str(fi), TensorStr *layer)
 		//激活函数求导函数装载
 		if ((void*)mlp->active_fi == (void*)mat_signmoid_par)
 			//signmoid
-			mlp->active_fid = signmoid_fd;
+			mlp->active_fid = _signmoid_fd;
 		else if ((void*)mlp->active_fi == (void*)mat_tanh_par)
 			//tanh
-			mlp->active_fid = tanh_fd;
+			mlp->active_fid = _tanh_fd;
 		else if ((void*)mlp->active_fi == (void*)mat_relu_par)
 			//relu
-			mlp->active_fid = relu_fd;
+			mlp->active_fid = _relu_fd;
 		else if ((void*)mlp->active_fi == (void*)mat_softmax_par)
 			//softmax
-			mlp->active_fid = softmax_fd;
+			mlp->active_fid = _softmax_fd;
 		else
 			mlp->active_fid = NULL;
 	return true;
@@ -43,10 +43,10 @@ int mlp_init(mlpstr *mlp, float op, active_fi_str(fi), TensorStr *layer)
 //单节点mlp前向过程
 //mlp:mlp节点
 //inmat:输入矩阵
-int mlp_one_op(void *mlp_add,TensorStr *inmat)
+bool mlp_one_op(void *mlp_add,TensorStr *inmat, uint16_t nums)
 {
 	MlpStr *mlp = (MlpStr*)mlp_add;
-	mat_mult_par(mlp->layer->mat[0], inmat->mat[0], mlp->outmat->mat[0]);
+	mat_mult_par(mlp->layer->mat[0], inmat->mat[nums], mlp->outmat->mat[0]);
 	mat_addto_value(mlp->outmat->mat[0], mlp->op);
 	mlp->active_fi(mlp->outmat->mat[0], mlp->outmat->mat[0]);
 	return true;
@@ -89,16 +89,16 @@ MlpStr *mlp_create(float op, active_fi_str(fi), uint16_t line, uint16_t row)
 		//激活函数求导函数装载
 		if ((void*)remlp->active_fi == (void*)mat_signmoid_par)
 			//signmoid
-			remlp->active_fid = signmoid_fd;
+			remlp->active_fid = _signmoid_fd;
 		else if ((void*)remlp->active_fi == (void*)mat_tanh_par)
 			//tanh
-			remlp->active_fid = tanh_fd;
+			remlp->active_fid = _tanh_fd;
 		else if ((void*)remlp->active_fi == (void*)mat_relu_par)
 			//relu
-			remlp->active_fid = relu_fd;
+			remlp->active_fid = _relu_fd;
 		else if ((void*)remlp->active_fi == (void*)mat_softmax_par)
 			//softmax
-			remlp->active_fid = softmax_fd;
+			remlp->active_fid = _softmax_fd;
 		else
 			remlp->active_fid = NULL;
 	}
@@ -107,10 +107,10 @@ MlpStr *mlp_create(float op, active_fi_str(fi), uint16_t line, uint16_t row)
 
 //优化次数:0
 //mlp_add:mlp地址
-//return:int标志
+//return:bool标志
 //content:要打印的内容
 //打印mlp
-int mlp_output(void *mlp_add , uint8_t content) 
+bool mlp_output(void *mlp_add , uint8_t content) 
 {
 	MlpStr *mlp = (MlpStr*)mlp_add;
 	char fi[] = "mlp_fi = " ;
@@ -153,16 +153,16 @@ int mlp_output(void *mlp_add , uint8_t content)
 	}
 	if (content&_mlp_fid) {
 		//激活函数求导函数装载
-		if ((void*)mlp->active_fid == (void*)signmoid_fd)
+		if ((void*)mlp->active_fid == (void*)_signmoid_fd)
 			//signmoid
 			cout << fid << "= signmoid_der" << endl << endl;
-		else if ((void*)mlp->active_fid == (void*)tanh_fd)
+		else if ((void*)mlp->active_fid == (void*)_tanh_fd)
 			//tanh
 			cout << fid << "tanh_der" << endl << endl;
-		else if ((void*)mlp->active_fid == (void*)relu_fd)
+		else if ((void*)mlp->active_fid == (void*)_relu_fd)
 			//relu
 			cout << fid << "relu_der" << endl << endl;
-		else if ((void*)mlp->active_fid == (void*)softmax_fd)
+		else if ((void*)mlp->active_fid == (void*)_softmax_fd)
 			//softmax
 			cout << "fid" << "softmax_der" << endl << endl;
 		else
@@ -176,7 +176,7 @@ int mlp_output(void *mlp_add , uint8_t content)
 //tensor:输入张量
 //r_mlp:mlp
 //各个连接层梯度
-int mlp_gr(TensorStr *tensor, MlpStr *r_mlp)
+bool mlp_gr(TensorStr *tensor, MlpStr *r_mlp)
 {
 	uint16_t i = NULL, j = NULL, nums_0 = NULL, nums_1 = NULL;
 	uint32_t line_offset0 = NULL;
@@ -193,8 +193,8 @@ int mlp_gr(TensorStr *tensor, MlpStr *r_mlp)
 	//梯度矩阵数据指针
 	mat2 = (float*)r_mlp->gr_mat->mat[0]->SaveAddr;
 	//更新梯度矩阵
-	for (; i < nums_0; ++i) {
-		for (; j < nums_1; ++j) {
+	for (i=NULL; i < nums_0; ++i) {
+		for (j=NULL; j < nums_1; ++j) {
 			mat2[line_offset0 + j] = mat0[i] * mat1[j];
 		}
 		line_offset0 += nums_1;
@@ -206,7 +206,7 @@ int mlp_gr(TensorStr *tensor, MlpStr *r_mlp)
 //l_mlp:当前mlp层
 //r_mlp:上一mlp层
 //输出误差传递
-int mlp_error_pass(MlpStr *l_mlp, MlpStr* r_mlp)
+bool mlp_error_pass(MlpStr *l_mlp, MlpStr* r_mlp)
 {
 	uint16_t  i = NULL, j = NULL, nums_0 = NULL, nums_1 = NULL;
 	float *mat_0 = NULL, *mat_1 = NULL, *mat_2 = NULL, sum_temp_0 = NULL;
@@ -240,7 +240,7 @@ int mlp_error_pass(MlpStr *l_mlp, MlpStr* r_mlp)
 //mlp:mlp
 //learmspeed:学习速率
 //更新mlp网络权重
-int mlp_update(MlpStr *mlp,float learmspeed)
+bool mlp_update(MlpStr *mlp,float learmspeed)
 {
 	uint32_t i = NULL,nums_0=mat_size(mlp->layer->mat[0]);
 	float *mat_0 = (float*)mlp->layer->mat[0]->SaveAddr, *mat_1 = (float*)mlp->gr_mat->mat[0]->SaveAddr;

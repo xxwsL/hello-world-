@@ -10,8 +10,8 @@
 #define _direct_now   0x10
 
 //图类型宏
-#define _mlp 0x01
-#define _cnn 0x02
+#define _mlp		0x01
+#define _cnn	    0x02
 #define _tensorarch 0x03
 
 //图生成宏
@@ -43,25 +43,25 @@ typedef struct GraphStr {
 //提取上一层节点的张量
 struct TensorStr *get_graph_tensor(struct GraphStr *graph, uint8_t direct);
 //前向传播图操作选择
-int graph_forward_switch(struct TensorStr *tensor, struct GraphStr *graph, uint8_t direct);
+bool graph_forward_switch(struct TensorStr *tensor, struct GraphStr *graph, uint8_t direct, uint16_t nums = 0);
 //创建mlp图
-GraphStr *graph_mlp_create(float op, int (*active_fi) (const struct MatrixStr *mat, struct MatrixStr *loadmat), uint16_t line, uint16_t row);
+GraphStr *graph_mlp_create(float op, bool (*active_fi) (const struct MatrixStr *mat, struct MatrixStr *loadmat), uint16_t line, uint16_t row);
 //创建tensorarch图
 GraphStr *graph_tensorarch_create(uint16_t l_u_line, uint16_t l_u_row, uint16_t l_u_height, uint16_t r_d_line, uint16_t r_d_row, uint16_t r_d_height);
 //打印图
-int graph_output(void *graph_add, uint8_t content);
+bool graph_output(void *graph_add, uint8_t content);
 //tensorarch图运算
-int graph_tensorarch_op(GraphStr *tensorarch_add, const uint8_t direct);
+bool graph_tensorarch_op(GraphStr *tensorarch_add, const uint8_t direct);
 //图链初始化
 GraphStr *graph_chain_init(GraphStr **graph_buf, uint16_t chain_len);
 //获得当前图相邻的图
 GraphStr *graph_next(GraphStr *in_grpah, uint8_t direct);
 //反向传播图操作选择
-int graph_back_switch(struct GraphStr *l_graph, struct GraphStr *now_graph);
+bool graph_back_switch(struct GraphStr *l_graph, struct GraphStr *now_graph);
 //针对开始节点的反向传播图操作选择的函数重载
-int graph_back_switch(struct TensorStr *tensor, struct GraphStr *now_graph);
+bool graph_back_switch(struct TensorStr *tensor, struct GraphStr *now_graph, uint16_t nums = 0);
 //更新图
-int graph_update(GraphStr *graph, float learmspeed);
+bool graph_update(GraphStr *graph, float learmspeed);
 
 #endif 
 #pragma once

@@ -4,7 +4,7 @@
 //graph:当前图
 //direct:方向
 //load_tensor:装载张量
-//return:int标志
+//return:bool标志
 //提取上一层节点的张量
 TensorStr* get_graph_tensor(struct GraphStr *graph, uint8_t direct)
 {
@@ -107,7 +107,7 @@ GraphStr *graph_tensorarch_create(uint16_t l_u_line, uint16_t l_u_row, uint16_t 
 //graph_add:图地址
 //content:内容
 //打印图
-int graph_output(void *graph_add, uint8_t content) 
+bool graph_output(void *graph_add, uint8_t content) 
 {
 	GraphStr *graph = (GraphStr*)graph_add;
 	switch(graph->graph_type){
@@ -130,7 +130,7 @@ int graph_output(void *graph_add, uint8_t content)
 //in_tensor:输入张量
 //direct:数据流方向方向
 //tensorarch图运算
-int graph_tensorarch_op(GraphStr *tensorarch_add, const uint8_t direct)
+bool graph_tensorarch_op(GraphStr *tensorarch_add, const uint8_t direct)
 {
 	if (tensorarch_op(tensorarch_add->graph_data, get_graph_tensor(tensorarch_add,direct), direct))
 		return true;
@@ -188,12 +188,12 @@ GraphStr *graph_next(GraphStr *in_grpah, uint8_t direct)
 //graph:输入图
 //tensor:输入张量
 //前向传播图操作选择
-int graph_forward_switch(TensorStr *tensor, struct GraphStr *graph, uint8_t direct)
+bool graph_forward_switch(TensorStr *tensor, struct GraphStr *graph, uint8_t direct, uint16_t nums)
 {
 	switch (graph->graph_type) {
 		//dnn节点
 	case _mlp:
-		mlp_one_op((MlpStr*)graph->graph_data, tensor);
+		mlp_one_op((MlpStr*)graph->graph_data, tensor, nums);
 		break;
 		//cnn节点
 	case _cnn:
@@ -210,7 +210,7 @@ int graph_forward_switch(TensorStr *tensor, struct GraphStr *graph, uint8_t dire
 //l_graph:左图
 //now_graph:当前图
 //反向传播图操作选择
-int graph_back_switch(struct GraphStr *l_graph, struct GraphStr *now_graph)
+bool graph_back_switch(struct GraphStr *l_graph, struct GraphStr *now_graph)
 {
 	switch (now_graph->graph_type){
 	//now_graph为dnn
@@ -247,7 +247,7 @@ int graph_back_switch(struct GraphStr *l_graph, struct GraphStr *now_graph)
 //tensor:输入张量
 //now_graph:当前图
 //针对开始节点的反向传播图操作选择的函数重载
-int graph_back_switch(struct TensorStr *tensor, struct GraphStr *now_graph)
+bool graph_back_switch(struct TensorStr *tensor, struct GraphStr *now_graph, uint16_t nums)
 {
 	switch (now_graph->graph_type) {
 		//now_graph为dnn
@@ -268,7 +268,7 @@ int graph_back_switch(struct TensorStr *tensor, struct GraphStr *now_graph)
 //graph:输入图
 //learmspeed:学习速率
 //图更新
-int graph_update(GraphStr *graph, float learmspeed)
+bool graph_update(GraphStr *graph, float learmspeed)
 {
 	switch (graph->graph_type){
 	case _mlp:

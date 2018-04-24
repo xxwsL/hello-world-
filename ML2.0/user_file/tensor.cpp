@@ -39,8 +39,8 @@ TensorStr *tensor_create(const uint16_t line, const uint16_t row, const uint16_t
 //tensor:待装载张量
 //vettor:矩阵容器
 //vetor_len:容器长度
-//return:返回int标志位
-int tensor_load(void *tensor_add, MatrixStr **vetor,const uint16_t vetor_len) 
+//return:返回bool标志位
+bool tensor_load(void *tensor_add, MatrixStr **vetor,const uint16_t vetor_len) 
 {
 	TensorStr *tensor = NULL;
 	tensor = (TensorStr*)tensor_add;
@@ -54,8 +54,8 @@ int tensor_load(void *tensor_add, MatrixStr **vetor,const uint16_t vetor_len)
 //load_tensor:装载张量
 //in_tensor:输入张量
 //direct:转移方向
-//return:返回int标志位
-int tensorarch_op(void *tensorarch_add,TensorStr *in_tensor,const uint8_t direct)
+//return:返回bool标志位
+bool tensorarch_op(void *tensorarch_add,TensorStr *in_tensor,const uint8_t direct)
 {
 	uint8_t *buf = NULL, *flag_add0 = NULL;
 	uint32_t i = NULL;
@@ -129,8 +129,8 @@ uint32_t tensor_size(TensorStr *tensor)
 //优化次数:0
 //打印张量
 //tensor:输入张量
-//return:int标志位
-int tensor_output(void *tensor_add)
+//return:bool标志位
+bool tensor_output(void *tensor_add)
 {
 	TensorStr *tensor = NULL;
 	tensor = (TensorStr*)tensor_add;
@@ -148,7 +148,7 @@ int tensor_output(void *tensor_add)
 //load:张量转移图
 //l_tensor;左张量
 //r_tensor:右张量
-int tensor_arch_load(TensorArch *load,TensorStr *l_tensor,TensorStr *r_tensor)
+bool tensor_arch_load(TensorArch *load,TensorStr *l_tensor,TensorStr *r_tensor)
 {
 	load->l_u_tensor = l_tensor;
 	load->r_d_tensor = r_tensor;
@@ -159,7 +159,7 @@ int tensor_arch_load(TensorArch *load,TensorStr *l_tensor,TensorStr *r_tensor)
 //打印张量信息
 //tensor:输入张量
 //return:boo标志
-int tensor_message(TensorStr *tensor)
+bool tensor_message(TensorStr *tensor)
 {
 	uint16_t i = NULL;
 	if (tensor == 0) {
@@ -177,8 +177,8 @@ int tensor_message(TensorStr *tensor)
 //优化次数:0
 //释放张量内存
 //tensor:输入张量
-//return:int标志
-int tensor_delete(TensorStr *tensor)
+//return:bool标志
+bool tensor_delete(TensorStr *tensor)
 {
 	uint16_t i = NULL;
 	if (tensor == 0){
@@ -219,9 +219,9 @@ TensorArch *tensorarch_create(uint16_t l_u_line, uint16_t l_u_row, uint16_t l_u_
 }
 
 //tensorarch:张量转移结构
-//return:int标志
+//return:bool标志
 //释放张量转移结构内存
-int tensorarch_delete(TensorArch *tenasorarch)
+bool tensorarch_delete(TensorArch *tenasorarch)
 {
 	tensor_delete(tenasorarch->l_u_tensor);
 	tensor_delete(tenasorarch->r_d_tensor);
@@ -233,7 +233,7 @@ int tensorarch_delete(TensorArch *tenasorarch)
 //tensorarch_add:tensorarch地址
 //direct:指向
 //打印tensorarch图
-int tensorarch_output(void *tensoarch_add,uint8_t direct)
+bool tensorarch_output(void *tensoarch_add,uint8_t direct)
 {
 	TensorArch *tensorarch = (TensorArch*)tensoarch_add;
 	if (direct&_direct_left) {
@@ -259,7 +259,7 @@ int tensorarch_output(void *tensoarch_add,uint8_t direct)
 //tensor:输入张量
 //value:有效浮点数值
 //张量赋值
-int tensor_assignment(TensorStr *tensor,float value) 
+bool tensor_assignment(TensorStr *tensor,float value) 
 {
 	uint16_t i = NULL;
 	for (; i < tensor->height;++i) {

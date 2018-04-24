@@ -4,20 +4,20 @@
 #include "xxwsL.h"
 
 //激活函数宏
-#define signmoid_active mat_signmoid_par
-#define tanh_active		mat_tanh_par
-#define relu_active     mat_relu_par
-#define softmax_active  mat_softmax_par
+#define _signmoid_active mat_signmoid_par
+#define _tanh_active	 mat_tanh_par
+#define _relu_active     mat_relu_par
+#define _softmax_active  mat_softmax_par
 
 //激活函数求导函数宏
-#define signmoid_fd mat_signmoid_der
-#define tanh_fd		mat_tanh_der
-#define relu_fd     mat_relu_der
-#define softmax_fd  mat_softmax_der
+#define _signmoid_fd mat_signmoid_der
+#define _tanh_fd	 mat_tanh_der
+#define _relu_fd     mat_relu_der
+#define _softmax_fd  mat_softmax_der
 
 //损失函数宏
-#define sqaure_loss	  1.0f
-#define cross_entropy 2.0f
+#define _sqaure_loss   1.0f
+#define _cross_entropy 2.0f
 
 //network_l内容标志
 #define _tr_mes 0x01
@@ -28,11 +28,6 @@
 #define _tr_target_data 0x20
 #define _tr_train_mes   0x40
 #define _tr_train_data  0x80
-
-//读入数据buf尺寸宏
-#define train_size 72
-
-extern uint8_t train_buf[train_size];
 
 
 //训练类
@@ -45,6 +40,8 @@ typedef struct Train {
 	struct GraphStr *end_graph;
 	//期望矩阵集合
 	struct TensorStr *target_set;
+	//label
+	uint16_t *label;
 	//输入矩阵
 	struct TensorStr *in_train;
 	//损失函数
@@ -54,29 +51,34 @@ typedef struct Train {
 //神经网络的类
 class network_l {
 public:
+	train tr;
 	//构造函数
 	network_l(float *tr_message, struct GraphStr *start_graph, struct TensorStr *target_set, struct TensorStr *in_train);
 	network_l();
 	//析构函数
 	~network_l();
 	//打印神经网络类的内容
-	int output(uint16_t content_0, uint8_t content_1);
-	//喂输入数据
-	//feed_in()
+	bool output(uint16_t content_0 = 0, uint8_t content_1 = 0);
+	//喂数据
+	bool feed_data(const char *simaple_file, const uint32_t i, uint16_t label);
+	//批量喂数据
+	bool batch_feed_data(const char *simaple_file, const uint32_t *i, uint16_t label);
 	//神经网络前向单步操作
-	int forward_propaga_step(struct GraphStr *graph, uint8_t direct);
+	bool forward_propaga_step(struct GraphStr *graph, uint8_t direct);
 	//神经网络前向传播
-	int forward_propaga(void);
+	bool forward_propaga(uint16_t nums = 0);
 	//计算输出总误差
 	float total_error(uint16_t label);
 	//神经网络反向传播
-	int back_propaga(uint16_t label);
+	bool back_propaga(uint16_t label, uint16_t nums = 0);
 	//更新神经网络
-	int network_l::update(void);
+	bool network_l::update(void);
+	//训练
+	int train(void);
+	//测试
+	float test(void);
 private:
-	train tr;
 };
-
 
 #endif 
 

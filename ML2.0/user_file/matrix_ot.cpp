@@ -6,7 +6,7 @@ MatFistr mat_tf = MatFiInit;
 //输出float型矩阵
 //mat:矩阵
 //return:位宽8标志位
-int output(const MatStr *mat)		
+bool output(const MatStr *mat)		
 {
 	uint16_t i = 0, j = 0;								//行和列地址偏移量
 	float* f32add;										//float类型矩阵指针
@@ -296,7 +296,7 @@ MatStr* mat_create(uint16_t mat_line, uint16_t mat_row, uint16_t mat_type)
 //删除矩阵并释放矩阵内存
 //mat:要释放的矩阵指针
 //return:位宽8标志位
-int mat_delete(MatStr *mat)
+bool mat_delete(MatStr *mat)
 {
 	if (mat == NULL) {
 		return false;
@@ -313,7 +313,7 @@ int mat_delete(MatStr *mat)
 //mat:输入赋值矩阵
 //value:有效值
 //return:位宽8标志位
-int mat_assignment(MatStr *mat,float value)
+bool mat_assignment(MatStr *mat,float value)
 {
 	int16_t *i16add=NULL;
 	float *f32add=NULL;
@@ -346,7 +346,7 @@ int mat_assignment(MatStr *mat,float value)
 //矩阵全员赋值0
 //mat:输入赋值矩阵
 //return:位宽8标志位
-int mat_zero(MatStr *mat)
+bool mat_zero(MatStr *mat)
 {
 	if (mat_assignment(mat, 0))
 		return true;
@@ -507,8 +507,8 @@ MatStr* mat_mult(const MatStr *mat_l,const MatStr *mat_r)
 //mat_l:左乘矩阵l
 //mat_r:右乘矩阵r
 //loadmat:装载矩阵
-//return:int标志位
-int mat_mult_par(const MatStr *mat_l, const MatStr *mat_r,MatStr *loadmat)
+//return:bool标志位
+bool mat_mult_par(const MatStr *mat_l, const MatStr *mat_r,MatStr *loadmat)
 {
 	uint16_t l_line = NULL, r_row = NULL, adds = NULL, l_line_offset = NULL, r_row_offset = NULL;
 	int16_t *i16mat_l_add = NULL, *i16mat_r_add = NULL;
@@ -606,7 +606,7 @@ int mat_mult_par(const MatStr *mat_l, const MatStr *mat_r,MatStr *loadmat)
 //打印矩阵信息
 //mat:输入矩阵
 //return:位宽8标志位
-int mat_message(const MatStr *mat)
+bool mat_message(const MatStr *mat)
 {
 	if (!mat) {
 		return false;
@@ -633,8 +633,8 @@ int mat_message(const MatStr *mat)
 //mat:输入矩阵
 //q_mat:分解矩阵q
 //r_mat:分解矩阵r
-//return:int标志位
-int mat_qr(const MatStr *mat,MatStr *q_mat,MatStr *r_mat)			//debug
+//return:bool标志位
+bool mat_qr(const MatStr *mat,MatStr *q_mat,MatStr *r_mat)			//debug
 {
 	uint16_t i = NULL, j = NULL, k = NULL,m=NULL;
 	int16_t *mat_i16add=NULL;
@@ -773,8 +773,8 @@ MatStr* mat_sub(const MatStr *mat_a, const MatStr *mat_b)
 //q_mat:左减float矩阵a
 //r_mat:右减float矩阵b
 //loadmat:载体矩阵
-//return:int型标志
-int mat_sub_par(const MatStr *mat_a, const MatStr *mat_b,MatStr *loadmat)
+//return:bool型标志
+bool mat_sub_par(const MatStr *mat_a, const MatStr *mat_b,MatStr *loadmat)
 {
 	uint32_t i = NULL, matsize = NULL;
 	float *f32mata_add = NULL, *f32matb_add = NULL, *f32remat_add;
@@ -868,9 +868,9 @@ MatStr* mat_signmoid(const MatStr *mat)
 //优化次数:0
 //矩阵signmoid函数化
 //mat:输入任意类型矩阵
-//return:int标志位
+//return:bool标志位
 //loadmat:装载矩阵
-int mat_signmoid_par(const MatStr *mat,MatStr *loadmat)
+bool mat_signmoid_par(const MatStr *mat,MatStr *loadmat)
 {
 	uint16_t lines = NULL, rows = NULL;
 	int16_t *i16mat_add = NULL;
@@ -909,7 +909,7 @@ int mat_signmoid_par(const MatStr *mat,MatStr *loadmat)
 //row:矩阵的列长
 //mattype:矩阵的类型
 //数据地址
-int mat_load(MatStr *mat,uint16_t line,uint16_t row, uint16_t mattype, void *saveadd)
+bool mat_load(MatStr *mat,uint16_t line,uint16_t row, uint16_t mattype, void *saveadd)
 {
 	if ((!mat)||(mat->SaveAddr))
 		return false;
@@ -924,8 +924,8 @@ int mat_load(MatStr *mat,uint16_t line,uint16_t row, uint16_t mattype, void *sav
 //两个矩阵校对
 //mat_a:输入矩阵a
 //mat_b:输入矩阵b
-//return:int型标志位
-int mat_proofread(const MatStr *mat_a, const MatStr *mat_b)
+//return:bool型标志位
+bool mat_proofread(const MatStr *mat_a, const MatStr *mat_b)
 {
 	if (!(mat_a&&mat_b))
 		return false;
@@ -971,8 +971,8 @@ float f32mat_dotmult_par(const MatStr *mat_l,const MatStr *mat_r,MatStr *loadmat
 //将一个8byte类型数组里的每一位对应转化为一个向量
 //buf:数组地址
 //loadmat:装载矩阵矩阵
-//return:int型标志
-int mat_tovector(const uint8_t *buf,MatStr *loadmat)
+//return:bool型标志
+bool mat_tovector(const uint8_t *buf,MatStr *loadmat)
 {
 	float l_value = 0.0f,r_value=0.1f;
 	float *loadmatadd = NULL;
@@ -1005,9 +1005,9 @@ int mat_tovector(const uint8_t *buf,MatStr *loadmat)
 //优化次数:0
 //矩阵tanh函数化
 //mat:输入任意类型矩阵
-//return:int标志位
+//return:bool标志位
 //loadmat:装载矩阵
-int mat_tanh_par(const MatStr *mat, MatStr *loadmat)
+bool mat_tanh_par(const MatStr *mat, MatStr *loadmat)
 {
 	uint16_t lines = NULL, rows = NULL;
 	float *f32mat_add = NULL, *f32remat_add = NULL;
@@ -1027,7 +1027,7 @@ int mat_tanh_par(const MatStr *mat, MatStr *loadmat)
 //矩阵relu函数化
 //mat:输入矩阵
 //loadmat:装载矩阵
-int mat_relu_par(const MatStr *mat,MatStr *loadmat)
+bool mat_relu_par(const MatStr *mat,MatStr *loadmat)
 {
 	uint16_t lines = NULL, rows = NULL;
 	float *f32mat_add = NULL, *f32remat_add = NULL;
@@ -1047,7 +1047,7 @@ int mat_relu_par(const MatStr *mat,MatStr *loadmat)
 //优化次数:0
 //矩阵似正态随机赋值
 //mat:输入矩阵
-int mat_rand_normal(MatStr *mat)
+bool mat_rand_normal(MatStr *mat)
 {
 	float *f32add = NULL,temp=NULL,tempsum=NULL;
 	uint32_t i = 0, matsize = 0;
@@ -1073,7 +1073,7 @@ int mat_rand_normal(MatStr *mat)
 //矩阵所有元素偏置一个值
 //mat:输入一个矩阵
 //value:偏置值
-int mat_addto_value(MatStr *mat, const float value)
+bool mat_addto_value(MatStr *mat, const float value)
 {
 	float *matadd = NULL;
 	uint32_t matszie = NULL,i=NULL;
@@ -1091,7 +1091,7 @@ int mat_addto_value(MatStr *mat, const float value)
 //矩阵softmax化
 //mat:输入矩阵
 //loadmat:装载矩阵
-int mat_softmax_par(const MatStr *mat,MatStr *loadmat) 
+bool mat_softmax_par(const MatStr *mat,MatStr *loadmat) 
 {
 	uint32_t i = NULL, matszie = NULL;
 	float exp_pow_sum = NULL;
@@ -1137,8 +1137,8 @@ double mat_element_sum(const MatStr *mat)
 //mat:输入矩阵
 //loadmat:装载矩阵
 //target:期望矩阵
-//return:int标志位
-int mat_softmax_der(const MatStr *mat,MatStr *loadmat,const MatStr *target)
+//return:bool标志位
+bool mat_softmax_der(const MatStr *mat,MatStr *loadmat,const MatStr *target)
 {
 	uint8_t aim = NULL;
 	uint32_t i = NULL, matsize = NULL;
@@ -1164,8 +1164,8 @@ int mat_softmax_der(const MatStr *mat,MatStr *loadmat,const MatStr *target)
 //mat:输入矩阵
 //loadmat:装载矩阵
 //target:期望矩阵
-//return:int标志位
-int mat_signmoid_der(const MatStr *mat, MatStr *loadmat, const MatStr *target)
+//return:bool标志位
+bool mat_signmoid_der(const MatStr *mat, MatStr *loadmat, const MatStr *target)
 {
 	uint32_t i = NULL, matsize = NULL;
 	float *mataddr = NULL, *loadmataddr = NULL, *targetaddr = NULL;
@@ -1196,8 +1196,8 @@ int mat_signmoid_der(const MatStr *mat, MatStr *loadmat, const MatStr *target)
 //mat:输入矩阵
 //loadmat:装载矩阵
 //target:期望矩阵
-//return:int标志位
-int mat_tanh_der(const MatStr *mat, MatStr *loadmat, const MatStr *target)
+//return:bool标志位
+bool mat_tanh_der(const MatStr *mat, MatStr *loadmat, const MatStr *target)
 {
 	uint32_t i = NULL, matsize = NULL;
 	float *mataddr = NULL, *loadmataddr = NULL, *targetaddr = NULL;
@@ -1228,8 +1228,8 @@ int mat_tanh_der(const MatStr *mat, MatStr *loadmat, const MatStr *target)
 //mat:输入矩阵
 //loadmat:装载矩阵
 //target:期望矩阵
-//return:int标志位
-int mat_relu_der(const MatStr *mat, MatStr *loadmat, const MatStr *target)
+//return:bool标志位
+bool mat_relu_der(const MatStr *mat, MatStr *loadmat, const MatStr *target)
 {
 	uint32_t i = NULL, matsize = NULL;
 	float *mataddr = NULL, *loadmataddr = NULL, *targetaddr = NULL;
@@ -1298,7 +1298,7 @@ float mat_maxelement(const MatStr *mat)
 //矩阵softmax化
 //mat:输入矩阵
 //loadmat:装载矩阵
-int mat_softmax_submax_par(const MatStr *mat, MatStr *loadmat)
+bool mat_softmax_submax_par(const MatStr *mat, MatStr *loadmat)
 {
 	uint32_t i = NULL, matszie = NULL;
 	float exp_pow_sum = NULL,element_max=NULL;
@@ -1345,7 +1345,7 @@ float mat_square_loss(const MatStr *mat, const MatStr *target)
 //优化次数:0
 //矩阵数据上下翻转
 //mat:矩阵类
-int f32mat_up_down_change(MatStr *mat)
+bool f32mat_up_down_change(MatStr *mat)
 {
 	uint16_t i = NULL, j = NULL, change_lines = NULL;
 	uint32_t up_line_offset = NULL,down_line_offset=NULL;
@@ -1385,7 +1385,7 @@ MatStr** mat_vetor_create(uint16_t vetor_len)
 //loadmat:装载矩阵
 //inmat:输入矩阵
 //nums:拷贝数组个数
-int mat_copy(MatrixStr *loadmat,MatrixStr *inmat,uint32_t nums)
+bool mat_copy(MatrixStr *loadmat,MatrixStr *inmat,uint32_t nums)
 {
 	if (nums > mat_size(loadmat) || nums > mat_size(inmat))
 		return false;
@@ -1396,10 +1396,10 @@ int mat_copy(MatrixStr *loadmat,MatrixStr *inmat,uint32_t nums)
 
 //优化次数:0
 //vetor:矩阵容器
-//return:int标志
-//return:int标志
+//return:bool标志
+//return:bool标志
 //释放矩阵容器内存(不释放容器里数据)
-int mat_vetor_delete(MatrixStr **vetor)
+bool mat_vetor_delete(MatrixStr **vetor)
 {
 	if (vetor == 0) {
 		return false;

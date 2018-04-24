@@ -4,11 +4,10 @@
 
 class cnn_l{
 public:
+	//构造函数
 	cnn_l();
+	//析构函数
 	~cnn_l();
-	MatrixStr *kernels;
-	int init_cnn(MatrixStr *mat);
-	int show_kernels(void);
 private:
 };
 

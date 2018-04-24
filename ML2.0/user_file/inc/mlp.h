@@ -29,25 +29,25 @@ typedef struct MlpStr {
 	//偏置提督
 	float op_gr;
 	//激活函数
-	int (*active_fi) (const struct MatrixStr *mat, struct MatrixStr *loadmat);
+	bool (*active_fi) (const struct MatrixStr *mat, struct MatrixStr *loadmat);
 	//求导函数
-	int (*active_fid) (const struct MatrixStr *mat, struct MatrixStr *loadmat, const struct MatrixStr *target);
+	bool (*active_fid) (const struct MatrixStr *mat, struct MatrixStr *loadmat, const struct MatrixStr *target);
 }mlpstr;
 
 //mlp节点初始化
-int mlp_init(mlpstr *mlp, float op, int (*active_fi) (const struct MatrixStr *mat, struct MatrixStr *loadmat), struct TensorStr *layer);
+bool mlp_init(mlpstr *mlp, float op, bool (*active_fi) (const struct MatrixStr *mat, struct MatrixStr *loadmat), struct TensorStr *layer);
 //单节点mlp前向过程
-int mlp_one_op(void *mlp_add, struct TensorStr *inmat);
+bool mlp_one_op(void *mlp_add, struct TensorStr *inmat, uint16_t nums = 0);
 //创建mlp数据域
-MlpStr *mlp_create(float op, int (*active_fi) (const struct MatrixStr *mat, struct MatrixStr *loadmat), uint16_t line, uint16_t row);
+MlpStr *mlp_create(float op, bool (*active_fi) (const struct MatrixStr *mat, struct MatrixStr *loadmat), uint16_t line, uint16_t row);
 //打印mlp
-int mlp_output(void *mlp_add, uint8_t content);
+bool mlp_output(void *mlp_add, uint8_t content);
 //各个连接层梯度
-int mlp_gr(struct TensorStr *tensor, MlpStr *r_mlp);
+bool mlp_gr(struct TensorStr *tensor, MlpStr *r_mlp);
 //输出误差传递
-int mlp_error_pass(MlpStr *l_mlp, MlpStr* r_mlp);
+bool mlp_error_pass(MlpStr *l_mlp, MlpStr* r_mlp);
 //更新mlp网络权重
-int mlp_update(MlpStr *mlp, float learmspeed);
+bool mlp_update(MlpStr *mlp, float learmspeed);
 
 #endif 
 

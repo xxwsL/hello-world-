@@ -1,20 +1,14 @@
 #include "inc\cnn.h"
 
+//构造函数
 cnn_l::cnn_l() {
 }
 
+//析构函数
 cnn_l::~cnn_l()
 {
 }
 
-int cnn_l::init_cnn(MatrixStr *mat)
+cnn_l::cnn_l() 
 {
-	kernels = mat;
-	return true;
-}
-
-int cnn_l::show_kernels(void)
-{
-	output(kernels);
-	return true;
 }

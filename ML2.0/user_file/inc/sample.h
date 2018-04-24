@@ -11,7 +11,7 @@
 #define max_update 1
 #define batch_size 1
 #define error_scope 0.05f
-#define learmspeed 0.01f
+#define learmspeed 0.1f
 
 //network test date
 //0:损失函数宏
@@ -19,23 +19,23 @@
 //2:批大小
 //3:误差限定值
 //4:学习速率
-float tr_message[5] = { cross_entropy,max_update,batch_size,error_scope,learmspeed };
+float tr_message[5] = { _cross_entropy,max_update,batch_size,error_scope,learmspeed };
 
-float target_mat_0[2][1] = {
-	events,unevents
-};
-
-float target_mat_1[2][1] = {
-	unevents,events
-};
-
-//float target_mat_0[10][1] = {
-//	events,unevents,unevents,unevents,unevents,unevents,unevents,unevents,unevents,unevents
+//float target_mat_0[2][1] = {
+//	events,unevents
 //};
 //
-//float target_mat_1[10][1] = {
-//	unevents,events,unevents,unevents,unevents,unevents,unevents,unevents,unevents,unevents
+//float target_mat_1[2][1] = {
+//	unevents,events
 //};
+
+float target_mat_0[10][1] = {
+	events,unevents,unevents,unevents,unevents,unevents,unevents,unevents,unevents,unevents
+};
+
+float target_mat_1[10][1] = {
+	unevents,events,unevents,unevents,unevents,unevents,unevents,unevents,unevents,unevents
+};
 
 float target_mat_2[10][1] = {
 	unevents,unevents,events,unevents,unevents,unevents,unevents,unevents,unevents,unevents
@@ -80,8 +80,8 @@ MatStr target_7 = f32MatInit(target_mat_7);
 MatStr target_8 = f32MatInit(target_mat_8);
 MatStr target_9 = f32MatInit(target_mat_9);
 
-//MatStr *target_set[] = { &target_0 ,&target_1,&target_2,&target_3,&target_4,&target_5,&target_6,&target_7,&target_8,&target_9 };
-MatStr *target_set[] = { &target_0 ,&target_1 };
+MatStr *target_set[] = { &target_0 ,&target_1,&target_2,&target_3,&target_4,&target_5,&target_6,&target_7,&target_8,&target_9 };
+//MatStr *target_set[] = { &target_0 ,&target_1 };
 
 #endif 
 
