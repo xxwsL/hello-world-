@@ -10,17 +10,12 @@
 #define _direct_now   0x10
 
 //图类型宏
-#define _mlp		0x01
-#define _cnn	    0x02
-#define _tensorarch 0x03
+#define _mlp		 0x01
+#define _cnn_conv	 0x02
+#define _cnn_pooling 0x04
+#define _tensorarch  0x10
 
-//图生成宏
-//mlp图
-#define new_graph_mlp(name,op,fi,line,row) struct GraphStr* name=graph_mlp_create(op,fi,line,row)
-//tensorarch图
-#define new_graph_tensorarch(name,line0,row0,height0,line1,row1,height1) struct GraphStr *name=\
-			graph_tensorarch_create(line0, row0, height0, line1, row1, height1)
-
+//图链初始化
 #define new_graph_chain(name)  graph_chain_init(name,sizeof(name)/sizeof(struct GraphStr*))
 
 //计算图类
@@ -47,7 +42,7 @@ bool graph_forward_switch(struct TensorStr *tensor, struct GraphStr *graph, uint
 //创建mlp图
 GraphStr *graph_mlp_create(float op, bool (*active_fi) (const struct MatrixStr *mat, struct MatrixStr *loadmat), uint16_t line, uint16_t row);
 //创建tensorarch图
-GraphStr *graph_tensorarch_create(uint16_t l_u_line, uint16_t l_u_row, uint16_t l_u_height, uint16_t r_d_line, uint16_t r_d_row, uint16_t r_d_height);
+GraphStr *graph_tensorarch_create(array<uint16_t, 4>l_u_buf, array<uint16_t, 4>r_d_buf);
 //打印图
 bool graph_output(void *graph_add, uint8_t content);
 //tensorarch图运算
@@ -62,6 +57,12 @@ bool graph_back_switch(struct GraphStr *l_graph, struct GraphStr *now_graph);
 bool graph_back_switch(struct TensorStr *tensor, struct GraphStr *now_graph, uint16_t nums = 0);
 //更新图
 bool graph_update(GraphStr *graph, float learmspeed);
+//创建cnn_vconv图
+GraphStr *graph_cnn_conv_create(array<uint16_t, 4>kernel_buf, array<uint16_t, 4>out_buf, array<uint8_t, 4>stride_buf, \
+								float op_value, bool(*fi) (const struct MatrixStr *mat, struct MatrixStr *loadmat));
+//创建卷积层池化图
+GraphStr *graph_cnn_pooling_create(uint16_t line_v, uint16_t row_v, array<uint16_t, 4> out_v, uint8_t type);
+
 
 #endif 
 #pragma once

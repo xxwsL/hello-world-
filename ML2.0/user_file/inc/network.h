@@ -76,7 +76,7 @@ public:
 	//ÑµÁ·
 	int train(void);
 	//²âÊÔ
-	float test(void);
+	float test(uint16_t label = 0);
 private:
 };
 

@@ -41,7 +41,7 @@ TensorStr* get_graph_tensor(struct GraphStr *graph, uint8_t direct)
 		return ((mlpstr*)temp_add->graph_data)->outmat;
 		break;
 		//cnn节点
-	case _cnn:
+	case _cnn_conv:
 		//tensor_add = ((cnn*)temp_add->graph_data);
 		return false;
 		break;
@@ -70,8 +70,7 @@ TensorStr* get_graph_tensor(struct GraphStr *graph, uint8_t direct)
 //创建mlp图
 GraphStr *graph_mlp_create(float op, active_fi_str(fi), uint16_t line, uint16_t row)
 {
-	GraphStr *re_graph = NULL;
-	re_graph = (GraphStr*)malloc(sizeof(GraphStr));
+	GraphStr *re_graph = new GraphStr;
 	re_graph->graph_type = _mlp;
 	re_graph->graph_data = mlp_create(op, fi, line, row);
 	re_graph->left_add = NULL;
@@ -90,12 +89,11 @@ GraphStr *graph_mlp_create(float op, active_fi_str(fi), uint16_t line, uint16_t 
 //r_d_height:右张量高
 //return:GraphStr指针
 //创建tensorarch图
-GraphStr *graph_tensorarch_create(uint16_t l_u_line, uint16_t l_u_row, uint16_t l_u_height, uint16_t r_d_line, uint16_t r_d_row, uint16_t r_d_height)
+GraphStr *graph_tensorarch_create(array<uint16_t, 4>l_u_buf, array<uint16_t, 4>r_d_buf)
 {
-	GraphStr *re_graph = NULL;
-	re_graph = (GraphStr*)malloc(sizeof(GraphStr));
+	GraphStr *re_graph = new GraphStr;
 	re_graph->graph_type = _tensorarch;
-	re_graph->graph_data = tensorarch_create(l_u_line, l_u_row, l_u_height, r_d_line, r_d_row, r_d_height);
+	re_graph->graph_data = tensorarch_create(l_u_buf, r_d_buf);
 	re_graph->left_add = NULL;
 	re_graph->up_add = NULL;
 	re_graph->right_add = NULL;
@@ -132,7 +130,7 @@ bool graph_output(void *graph_add, uint8_t content)
 //tensorarch图运算
 bool graph_tensorarch_op(GraphStr *tensorarch_add, const uint8_t direct)
 {
-	if (tensorarch_op(tensorarch_add->graph_data, get_graph_tensor(tensorarch_add,direct), direct))
+	if (tensorarch_op((TensorArch*)tensorarch_add->graph_data, get_graph_tensor(tensorarch_add,direct), direct))
 		return true;
 	else
 		return false;
@@ -196,7 +194,7 @@ bool graph_forward_switch(TensorStr *tensor, struct GraphStr *graph, uint8_t dir
 		mlp_one_op((MlpStr*)graph->graph_data, tensor, nums);
 		break;
 		//cnn节点
-	case _cnn:
+	case _cnn_conv:
 		break;
 		//tensor_arch节点
 	case _tensorarch:
@@ -231,7 +229,7 @@ bool graph_back_switch(struct GraphStr *l_graph, struct GraphStr *now_graph)
 		}
 		break;
 	//now_graph为cnn
-	case _cnn:
+	case _cnn_conv:
 		return false;//未实现
 		break;
 	//now_graph为tensorarch
@@ -255,7 +253,7 @@ bool graph_back_switch(struct TensorStr *tensor, struct GraphStr *now_graph, uin
 		mlp_gr(tensor, (MlpStr*)now_graph->graph_data);
 		break;
 		//now_graph为cnn
-	case _cnn:
+	case _cnn_conv:
 		return false;//未实现
 		break;
 	default:
@@ -277,7 +275,7 @@ bool graph_update(GraphStr *graph, float learmspeed)
 	case _tensorarch:
 		return true;
 		break;
-	case _cnn:
+	case _cnn_conv:
 		return false;
 		break;
 	default:
@@ -285,5 +283,37 @@ bool graph_update(GraphStr *graph, float learmspeed)
 		break;
 	}
 	return true;
+}
+
+//kernel_buf:(0)line (1)row (2)height (3)deep
+//out_buf:(0)line (1)row (2)height (3)deep
+//stride_buf:(0)line (1)row (2)height (3)deep
+//op_value:偏置值
+//active_fi_str:激活函数
+//创建cnn_conv核
+GraphStr *graph_cnn_conv_create(array<uint16_t, 4>kernel_buf, array<uint16_t, 4>out_buf, array<uint8_t, 4>stride_buf, float op_value, active_fi_str(fi))
+{
+	//创建一个图
+	GraphStr *graph = new GraphStr;
+	//创建一个cnn_conv
+	cnn_conv *cnn_conv_ = new cnn_conv(kernel_buf, out_buf, stride_buf, op_value, fi);
+	//把cnn_conv装载到图
+	graph->graph_data = cnn_conv_;
+	graph->graph_type = _cnn_conv;
+	return graph;
+}
+
+//line_v:行长
+//row_v:列长
+//out_v:输出张量尺寸信息
+//type:池化操作类型
+//创建卷积层池化图
+GraphStr *graph_cnn_pooling_create(uint16_t line_v, uint16_t row_v, array<uint16_t, 4> out_v, uint8_t type)
+{
+	GraphStr *graph = new GraphStr;
+	cnn_pooling *pooling = new cnn_pooling(line_v, row_v, out_v, type);
+	graph->graph_data = pooling;
+	graph->graph_type = _cnn_pooling;
+	return graph;
 }
 

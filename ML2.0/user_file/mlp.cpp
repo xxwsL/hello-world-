@@ -61,9 +61,8 @@ bool mlp_one_op(void *mlp_add,TensorStr *inmat, uint16_t nums)
 //创建mlp数据域
 MlpStr *mlp_create(float op, active_fi_str(fi), uint16_t line, uint16_t row)
 {
-	MlpStr *remlp = NULL;
 	//申请mlp内存
-	remlp = (MlpStr*)malloc(sizeof(MlpStr));
+	MlpStr *remlp = new MlpStr;
 	if(remlp){
 		//分配张量容量
 		remlp->layer = tensor_create(line, row, 1);
@@ -74,7 +73,7 @@ MlpStr *mlp_create(float op, active_fi_str(fi), uint16_t line, uint16_t row)
 			tensor_delete(remlp->layer);
 			tensor_delete(remlp->outmat);
 			tensor_delete(remlp->gr_mat);
-			free(remlp);
+			delete remlp;
 			remlp = NULL;
 			return false;
 		}
@@ -168,7 +167,9 @@ bool mlp_output(void *mlp_add , uint8_t content)
 		else
 			cout << fid <<  "NULL" << endl << endl;
 	}
-
+	if (content&_mlp_gr_op) {
+		cout << "mlp_gr_op = " << mlp->op_gr<<"\n\n";
+	}
 	return true;
 }
 
@@ -193,12 +194,17 @@ bool mlp_gr(TensorStr *tensor, MlpStr *r_mlp)
 	//梯度矩阵数据指针
 	mat2 = (float*)r_mlp->gr_mat->mat[0]->SaveAddr;
 	//更新梯度矩阵
+	r_mlp->op_gr = 0;
 	for (i=NULL; i < nums_0; ++i) {
 		for (j=NULL; j < nums_1; ++j) {
 			mat2[line_offset0 + j] = mat0[i] * mat1[j];
 		}
 		line_offset0 += nums_1;
+		//偏置误差累加
+		r_mlp->op_gr += mat0[i];
 	}
+	//更新偏置梯度
+	r_mlp->op_gr /= nums_0;
 	return true;
 }
 
@@ -247,5 +253,6 @@ bool mlp_update(MlpStr *mlp,float learmspeed)
 	for (; i < nums_0; ++i) {
 		mat_0[i] -= learmspeed * mat_1[i];
 	}
+	mlp->op -= learmspeed*mlp->op_gr;
 	return true;
 }

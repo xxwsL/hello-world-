@@ -79,7 +79,7 @@ bool output(const MatStr *mat);
 //切割矩阵
 MatStr* mat_cut(const MatStr *mat_a, uint16_t cut_line_size, uint16_t cut_row_size, uint16_t number, uint16_t remat_type);
 //矩阵赋值
-bool mat_assignment(MatStr *mat, float value);
+bool mat_assignment(MatStr *mat, float value =0.0f);
 //矩阵赋0
 bool mat_zero(MatStr *mat);
 //矩阵大小
@@ -93,7 +93,7 @@ bool mat_load(MatStr *mat, uint16_t line, uint16_t row, uint16_t mattype, void *
 //两个矩阵校对
 bool mat_proofread(const MatStr *mat_a, const MatStr *mat_b);
 //数组对应位转换相对应向量
-bool mat_tovector(const uint8_t *buf, MatStr *loadmat);
+bool mat_tovector(const uint8_t *buf, MatStr *loadmat, float r_value = 0.1f);
 //矩阵赋值似正态随机值
 bool mat_rand_normal(MatStr *mat);
 //矩阵上下翻转
@@ -148,5 +148,11 @@ float mat_maxelement(const MatStr *mat);
 bool mat_softmax_submax_par(const MatStr *mat, MatStr *loadmat);
 //平方损失函数
 float mat_square_loss(const MatStr *mat, const MatStr *target);
+//矩阵卷积
+bool mat_conv(const MatrixStr *in_mat, MatrixStr *kernel, MatrixStr *load_mat, uint8_t line_stride, uint8_t row_stride, uint8_t padding);
+//矩阵均值池化
+bool mat_pooling(const MatrixStr *mat, uint16_t pool_line, uint16_t pool_row, MatrixStr *loadmat);
+//矩阵所有元素成一个数
+bool mat_mult_element(const MatrixStr *mat, float value, MatrixStr *loadmat);
 
 #endif // ! _matrix_ot_h_

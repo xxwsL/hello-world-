@@ -37,7 +37,7 @@ network_l::network_l(float *tr_message, struct GraphStr *start_graph, TensorStr 
 	//装载训练输入数据
 	tr.in_train = in_train;
 	//申请批标签集
-	tr.label = (uint16_t*)malloc((size_t)tr.tr_message[2] * 2);
+	tr.label = new uint16_t [(uint32_t)tr.tr_message[2]];
 }
 
 //优化次数:0
@@ -60,7 +60,7 @@ network_l::network_l()
 //network_l类析构函数
 network_l::~network_l()
 {
-	free(tr.label);
+	delete[] tr.label;
 }
 
 //优化:0
@@ -268,21 +268,25 @@ bool network_l::batch_feed_data(const char *simaple_file, const uint32_t *i, uin
 int network_l::train(void)
 {
 	uint16_t i = NULL;
+	//前向传播+反向传播
 	for (i = NULL; i < tr.tr_message[2]; ++i) {
 		forward_propaga(i);
 		output(_tr_end_graph, _mlp_outmat);
-		cout << test() << "\n";
+		cout << test(i) << "\n";
 		back_propaga(tr.label[i], i);
 	}
+	//更新神经网络
 	update();
 	return true;
 }
 
 //测试
-float network_l::test(void)
+float network_l::test(uint16_t label)
 {
-	forward_propaga();
-	return total_error(tr.label[0]);
+	//前向传播
+	forward_propaga(label);
+	//计算输出总误差
+	return total_error(tr.label[label]);
 }
 
 

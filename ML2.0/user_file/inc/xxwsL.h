@@ -13,6 +13,8 @@
 #include "time.h"
 
 #include <iostream>
+#include <vector>
+#include <array>
 
 #include "xxwsL_status.h"
 

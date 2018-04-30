@@ -6,28 +6,29 @@
 //row:列长
 //height:张量的维数
 //return:TensorStr指针或标志位
-TensorStr *tensor_create(const uint16_t line, const uint16_t row, const uint16_t height)
+TensorStr *tensor_create(const uint16_t line, const uint16_t row, const uint16_t height, uint16_t deep)
 {
-	uint16_t i = NULL;
-	TensorStr *tensor = NULL;
+	uint32_t i = NULL, nums_0 = height * deep;
+	TensorStr *tensor = new TensorStr;
 	//张量高不能为0
 	if (height!=NULL) {
 		//申请内存成功
-		if (tensor = (TensorStr*)malloc(sizeof(TensorStr))) {
+		if (tensor) {
 			//初始化张量的高
 			tensor->height = height;
+			tensor->deep = deep;
 			//初始化张量容器
 			if (tensor->mat = mat_vetor_create(height)) {
 				//如果行和列都不为0
 				if (line != NULL&&row != NULL) {
-					for (i = NULL; i < height; ++i) {
+					for (i = NULL; i < nums_0; ++i) {
 						tensor->mat[i] = mat_create(line, row, f32Flag);
 					}
 				}
 				return tensor;
 			}
 			else {
-				free(tensor);
+				delete tensor;
 			}
 		}
 	}
@@ -40,11 +41,12 @@ TensorStr *tensor_create(const uint16_t line, const uint16_t row, const uint16_t
 //vettor:矩阵容器
 //vetor_len:容器长度
 //return:返回bool标志位
-bool tensor_load(void *tensor_add, MatrixStr **vetor,const uint16_t vetor_len) 
+bool tensor_load(void *tensor_add, MatrixStr **vetor,const uint16_t vetor_len, const uint16_t deep)
 {
 	TensorStr *tensor = NULL;
 	tensor = (TensorStr*)tensor_add;
 	tensor->height = vetor_len;
+	tensor->deep = deep;
 	tensor->mat = vetor;
 	return true;
 }
@@ -55,14 +57,13 @@ bool tensor_load(void *tensor_add, MatrixStr **vetor,const uint16_t vetor_len)
 //in_tensor:输入张量
 //direct:转移方向
 //return:返回bool标志位
-bool tensorarch_op(void *tensorarch_add,TensorStr *in_tensor,const uint8_t direct)
+bool tensorarch_op(TensorArch *tensorarch,TensorStr *in_tensor,const uint8_t direct,const uint16_t deep)
 {
 	uint8_t *buf = NULL, *flag_add0 = NULL;
 	uint32_t i = NULL;
-	uint32_t temp_size = NULL,in_tensor_size=NULL;
+	uint32_t temp_size = NULL,u32num0=NULL;
+	uint32_t offset0 = deep*in_tensor->height;
 	TensorStr *tensor_p = NULL;
-	TensorArch *tensorarch=NULL;
-	tensorarch = (TensorArch*)tensorarch_add;
 	//数据流方向判决
 	switch (direct){
 		//转换方向左
@@ -86,29 +87,31 @@ bool tensorarch_op(void *tensorarch_add,TensorStr *in_tensor,const uint8_t direc
 	}
 	//获得装载张量和输入张量的尺寸
 	temp_size = tensor_size(tensor_p); 
-	in_tensor_size = tensor_size(in_tensor);
+	u32num0 = tensor_size(in_tensor);
 	//判断是否符合装载条件
-	if (temp_size > in_tensor_size) {
+	if (temp_size != u32num0) {
 		return false;
 	}
 	//创建缓存buf
-	buf = (uint8_t*)malloc(in_tensor_size*4);
+	buf = new uint8_t[u32num0 * 4];
 	flag_add0 = buf;
+	u32num0 = in_tensor->deep*in_tensor->height;
 	//把输入张量里的数据拷贝到缓存buf里
-	for (i = NULL; i < in_tensor->height;++i) {
+	for (i = NULL; i < u32num0;++i) {
 		temp_size = mat_size(in_tensor->mat[i]) * 4;
 		memcpy(flag_add0,in_tensor->mat[i]->SaveAddr,temp_size);
 		flag_add0 += temp_size;
 	}
 	//把缓存buf的数据拷贝到装载张量里
 	flag_add0 = buf; 
-	for (i = NULL; i < tensor_p->height; ++i) {
+	u32num0 = tensor_p->deep*tensor_p->height;
+	for (i = NULL; i < u32num0; ++i) {
 		temp_size = mat_size(tensor_p->mat[i]) * 4; 
 		memcpy(tensor_p->mat[i]->SaveAddr, flag_add0, temp_size);
 		flag_add0 += temp_size;
 	}
 	//拷贝完成,释放缓存内存
-	free(buf);
+	delete[]buf;
 	return true;
 }
 
@@ -120,7 +123,8 @@ uint32_t tensor_size(TensorStr *tensor)
 {
 	uint16_t i = NULL;
 	uint32_t size = NULL;
-	for (; i < tensor->height; ++i){
+	uint32_t nums_0 = tensor->deep*tensor->height;
+	for (; i < nums_0; ++i){
 		size += mat_size(tensor->mat[i]);
 	}
 	return size;
@@ -130,16 +134,17 @@ uint32_t tensor_size(TensorStr *tensor)
 //打印张量
 //tensor:输入张量
 //return:bool标志位
-bool tensor_output(void *tensor_add)
+bool tensor_output(void *tensor_add, uint16_t deep)
 {
 	TensorStr *tensor = NULL;
 	tensor = (TensorStr*)tensor_add;
-	uint16_t i = NULL,height=NULL;
-	height = tensor->height;
-	for (i = NULL; i < height; ++i) {
-		printf("layer : %d\n", i);
-		output(tensor->mat[i]);
-	}
+	uint16_t i = NULL, height = tensor->height;
+	uint32_t offset = tensor->deep * deep;
+
+		for (i = NULL; i < height; ++i) {
+			printf("layer : %d\n", i);
+			output(tensor->mat[i+offset]);
+		}
 	return true;
 }
 
@@ -159,9 +164,10 @@ bool tensor_arch_load(TensorArch *load,TensorStr *l_tensor,TensorStr *r_tensor)
 //打印张量信息
 //tensor:输入张量
 //return:boo标志
-bool tensor_message(TensorStr *tensor)
+bool tensor_message(TensorStr *tensor, uint16_t deep)
 {
 	uint16_t i = NULL;
+	uint32_t offset = tensor->deep * deep;
 	if (tensor == 0) {
 		return false;
 	}
@@ -169,7 +175,7 @@ bool tensor_message(TensorStr *tensor)
 	cout << "张量高度 = "<<tensor->height<<endl<<endl;
 	for (i = NULL; i < tensor->height; ++i) {
 		cout << "mat_" << i << endl;
-		mat_message(tensor->mat[i]);
+		mat_message(tensor->mat[i+offset]);
 	}
 	return true;
 }
@@ -180,14 +186,15 @@ bool tensor_message(TensorStr *tensor)
 //return:bool标志
 bool tensor_delete(TensorStr *tensor)
 {
-	uint16_t i = NULL;
+	uint32_t i = NULL;
+	uint32_t nums_0 = tensor_size(tensor);
 	if (tensor == 0){
 		return false;
 	}
-	for (i = NULL; i < tensor->height; ++i) {
+	for (i = NULL; i < nums_0; ++i) {
 		mat_delete(tensor->mat[i]);
 	}
-	free(tensor);
+	delete tensor;
 	tensor = NULL;
 	return true;
 }
@@ -201,18 +208,20 @@ bool tensor_delete(TensorStr *tensor)
 //r_d_height:右张量高
 //return:TensorArch指针
 //创建张量转移结构
-TensorArch *tensorarch_create(uint16_t l_u_line, uint16_t l_u_row, uint16_t l_u_height, uint16_t r_d_line, uint16_t r_d_row, uint16_t r_d_height)
+TensorArch *tensorarch_create(array<uint16_t,4>l_u_buf, array<uint16_t, 4>r_d_buf)
 {
-	TensorArch *tensorarch = NULL;
-	if (tensorarch = (TensorArch*)malloc(sizeof(TensorArch))) {
+	TensorArch *tensorarch = new TensorArch;
 
-		if ((tensorarch->l_u_tensor = tensor_create(l_u_line, l_u_row, l_u_height)) && (tensorarch->r_d_tensor = tensor_create(r_d_line, r_d_row, r_d_height))) {
+	if (tensorarch) {
+
+		if ((tensorarch->l_u_tensor = tensor_create(l_u_buf[0], l_u_buf[1], l_u_buf[2], l_u_buf[3])) &&
+			(tensorarch->r_d_tensor = tensor_create(r_d_buf[0], r_d_buf[1], r_d_buf[2], r_d_buf[3]))) {
 			return tensorarch;
 		}
 		else {
 			tensor_delete(tensorarch->l_u_tensor);
 			tensor_delete(tensorarch->r_d_tensor);
-			free(tensorarch);
+			delete tensorarch;
 		}
 	}
 	return false;
@@ -225,7 +234,7 @@ bool tensorarch_delete(TensorArch *tenasorarch)
 {
 	tensor_delete(tenasorarch->l_u_tensor);
 	tensor_delete(tenasorarch->r_d_tensor);
-	free(tenasorarch);
+	delete tenasorarch;
 	return true;
 }
 
@@ -233,24 +242,24 @@ bool tensorarch_delete(TensorArch *tenasorarch)
 //tensorarch_add:tensorarch地址
 //direct:指向
 //打印tensorarch图
-bool tensorarch_output(void *tensoarch_add,uint8_t direct)
+bool tensorarch_output(void *tensoarch_add,uint8_t direct, uint16_t deep)
 {
 	TensorArch *tensorarch = (TensorArch*)tensoarch_add;
 	if (direct&_direct_left) {
 		cout << "l_tensor = " << endl;
-		tensor_output(tensorarch->l_u_tensor);
+		tensor_output(tensorarch->l_u_tensor, deep);
 	}
 	if (direct&_direct_up) {
 		cout << "u_tensor = " << endl;
-		tensor_output(tensorarch->l_u_tensor);
+		tensor_output(tensorarch->l_u_tensor, deep);
 	}
 	if (direct&_direct_right) {
 		cout << "r_tensor = " << endl;
-		tensor_output(tensorarch->r_d_tensor);
+		tensor_output(tensorarch->r_d_tensor, deep);
 	}
 	if (direct&_direct_down) {
 		cout << "d_tensor = " << endl;
-		tensor_output(tensorarch->r_d_tensor);
+		tensor_output(tensorarch->r_d_tensor, deep);
 	}
 	return true;
 }
@@ -259,10 +268,10 @@ bool tensorarch_output(void *tensoarch_add,uint8_t direct)
 //tensor:输入张量
 //value:有效浮点数值
 //张量赋值
-bool tensor_assignment(TensorStr *tensor,float value) 
+bool tensor_assignment(TensorStr *tensor, float value)
 {
-	uint16_t i = NULL;
-	for (; i < tensor->height;++i) {
+	uint32_t i = NULL, nums_0 = tensor->height * tensor->deep;
+	for (; i < nums_0;++i) {
 		mat_assignment(tensor->mat[i],value);
 	}
 	return true;

@@ -243,7 +243,7 @@ MatStr* mat_create(uint16_t mat_line, uint16_t mat_row, uint16_t mat_type)
 	if (!(mat_line&&mat_row))
 		return false;
 #ifdef Simulation		//仿真模式
-	 create_mat= (MatStr*)malloc(sizeof(MatStr));
+	 create_mat= new MatrixStr;
 #else
 //内存管理模块
 #endif 
@@ -251,7 +251,7 @@ MatStr* mat_create(uint16_t mat_line, uint16_t mat_row, uint16_t mat_type)
 		switch (mat_type&MatTypeFlag) {
 		case i16Flag:
 #ifdef Simulation		//仿真模式
-			create_mat->SaveAddr = malloc(mat_line*mat_row * 2);
+			create_mat->SaveAddr = new uint16_t[mat_line*mat_row] ();
 #else
 			//内存管理模块
 #endif 
@@ -259,14 +259,14 @@ MatStr* mat_create(uint16_t mat_line, uint16_t mat_row, uint16_t mat_type)
 				create_mat->flag = i16Flag;
 			}
 			else {									//分配内存失败
-				free(create_mat);
+				delete create_mat;
 				create_mat = NULL;
 				return false;
 			}
 			break;
 		case f32Flag:
 #ifdef Simulation		//仿真模式
-			create_mat->SaveAddr = malloc(mat_line*mat_row * 4);
+			create_mat->SaveAddr = new float[mat_line*mat_row] ();
 #else
 			//内存管理模块
 #endif 		
@@ -274,13 +274,13 @@ MatStr* mat_create(uint16_t mat_line, uint16_t mat_row, uint16_t mat_type)
 				create_mat->flag = f32Flag;
 			}
 			else {
-				free(create_mat);
+				delete create_mat;
 				create_mat = NULL;
 				return false;
 			}
 			break;
 		default:
-			free(create_mat);
+			delete create_mat;
 			create_mat = NULL;
 			return false;
 			break;
@@ -298,12 +298,9 @@ MatStr* mat_create(uint16_t mat_line, uint16_t mat_row, uint16_t mat_type)
 //return:位宽8标志位
 bool mat_delete(MatStr *mat)
 {
-	if (mat == NULL) {
-		return false;
-	}
-	free(mat->SaveAddr);
+	delete[] mat->SaveAddr;
 	mat->SaveAddr = NULL;
-	free(mat);
+	delete mat;
 	mat = NULL;
 	return true;
 }
@@ -972,9 +969,9 @@ float f32mat_dotmult_par(const MatStr *mat_l,const MatStr *mat_r,MatStr *loadmat
 //buf:数组地址
 //loadmat:装载矩阵矩阵
 //return:bool型标志
-bool mat_tovector(const uint8_t *buf,MatStr *loadmat)
+bool mat_tovector(const uint8_t *buf,MatStr *loadmat,float r_value)
 {
-	float l_value = 0.0f,r_value=0.1f;
+	float l_value = 0.0f;
 	float *loadmatadd = NULL;
 	uint16_t j = NULL;
 	uint32_t i = NULL;
@@ -1022,7 +1019,6 @@ bool mat_tanh_par(const MatStr *mat, MatStr *loadmat)
 	return true;
 }
 
-
 //优化次数:0
 //矩阵relu函数化
 //mat:输入矩阵
@@ -1042,7 +1038,6 @@ bool mat_relu_par(const MatStr *mat,MatStr *loadmat)
 		}
 	return true;
 }
-
 
 //优化次数:0
 //矩阵似正态随机赋值
@@ -1376,7 +1371,7 @@ bool f32mat_up_down_change(MatStr *mat)
 MatStr** mat_vetor_create(uint16_t vetor_len)
 {
 #ifdef Simulation
-	return (MatStr**)malloc(vetor_len*sizeof(MatrixStr*));
+	return new MatrixStr*[vetor_len];
 #endif 
 }
 
@@ -1405,12 +1400,131 @@ bool mat_vetor_delete(MatrixStr **vetor)
 		return false;
 	}
 #ifdef Simulation
-	free(vetor);
+	delete vetor;
 #endif 
 	vetor = NULL;
 	return true;
 }
 
+//in_mat:输入矩阵
+//kernel:卷积核
+//load_mat:装载矩阵
+//line_stride:行步长
+//row_stride:列步长
+//padding:填充标志
+//填充标志
+//矩阵卷积运算
+bool mat_conv(const MatrixStr *in_mat, MatrixStr *kernel, MatrixStr *load_mat, uint8_t line_stride, uint8_t row_stride, uint8_t padding) 
+{
+	uint16_t coor_line = NULL, coor_row = NULL;
+	uint16_t u16_num0 = NULL, u16_num1 = NULL, u16_num2 = load_mat->line, u16_num3 = load_mat->row;
+	uint16_t i = NULL, j = NULL, k = NULL, l = NULL;
+	uint32_t offset0 = NULL, offset1 = NULL, offset2 = NULL;
+	float *mat0 = (float*)in_mat->SaveAddr, *mat1 = (float*)kernel->SaveAddr, *mat2 = (float*)load_mat->SaveAddr;
+	//卷积核的行长和列长不能大于
+	if ((in_mat->line>=kernel->line)&&(in_mat->row>=kernel->row)) {
+		//填充模式
+		if (padding) {
+			//卷积之后的行输出
+			u16_num0 = in_mat->line / line_stride;
+			//卷积之后的列输出
+			u16_num1 = in_mat->row / row_stride;
+
+		}
+		//非填充模式
+		else {
+			//卷积之后的行输出
+			u16_num0 = (in_mat->line - kernel->line + 1) % line_stride ? (in_mat->line - kernel->line + 1) / line_stride + 1 : (in_mat->line - kernel->line + 1) / line_stride;
+			//卷积之后的列输出
+			u16_num1 = (in_mat->row - kernel->row + 1) % row_stride ? (in_mat->row - kernel->row + 1) / row_stride + 1 : (in_mat->row - kernel->row + 1) / row_stride;
+		}
+	}
+	else {
+		return false;
+	}
+	//输出不匹配
+	if ((u16_num0 != load_mat->line)&&(u16_num1 != load_mat->row)) {
+		return false;
+	}
+	//卷积核的尺寸
+	u16_num0 = kernel->line;
+	u16_num1 = kernel->row;
+	//填充模式卷积算法
+	if (padding) {
+
+	}
+	//非填充模式卷积算法
+	else {
+		//进行卷积的行次数
+		for (i = 0; i < u16_num2; ++i) {
+			//进行卷积的列次数
+			for (j = 0; j < u16_num3; ++j) {
+				//卷积起始时输入矩阵位置&装载矩阵的起始位置
+				offset0 = coor_line*in_mat->line + coor_row;
+				offset2 = i*load_mat->row + j;
+				//卷积核列控制
+				for (k = 0; k < u16_num0; ++k) {
+					//卷积核行控制
+					for (l = 0; l < u16_num1; ++l) {
+						mat2[offset2] += mat0[offset0 + l] * mat1[offset1 + l];
+					}
+					//输入矩阵当前位置加一行
+					offset0 += in_mat->row;
+					//卷积核矩阵当前位置加一行
+					offset1 += u16_num1;
+				}
+				//完成一次卷积核运算
+				offset1 = 0;
+				//列前进一个步伐
+				coor_row += row_stride;
+			}
+			coor_row = 0;
+			//行前进一个步伐
+			coor_line += line_stride;
+		}
+	}
+	return true;
+}
+
+//矩阵均值池化
+bool mat_pooling(const MatrixStr *mat, uint16_t pool_line, uint16_t pool_row, MatrixStr *loadmat)
+{
+	uint16_t num0 = mat->line / pool_line, num1 = mat->row / pool_row, num2 = mat->row - num1*pool_row;
+	uint16_t i = NULL, j = NULL, k = NULL, l = NULL;
+	uint32_t offset0 = NULL, offset1 = NULL;
+	float *mat0 = (float*)mat->SaveAddr, *mat1 = (float*)loadmat->SaveAddr;
+	//loadmat清0
+	mat_zero(loadmat);
+	for (i = 0; i < num0; ++i) {
+		for (j = 0; j < pool_line; ++j) {
+			//num1 = mat一列可以池化的次数
+			for (k = 0; k < num1; ++k) {
+				for (l = 0; l < pool_row; ++l) {
+					mat1[k + offset1] += mat0[offset0];
+					offset0++;
+				}
+			}
+			offset0 += num2;
+		}
+		offset1 += loadmat->row;
+	}
+	mat_mult_element(loadmat,(float)1/pool_line/pool_row,loadmat);
+	return true;
+}
+
+//矩阵所有元素乘一个数
+bool mat_mult_element(const MatrixStr *mat, float value, MatrixStr *loadmat)
+{
+	float *mat0 = (float*)mat->SaveAddr, *mat1 = (float*)loadmat->SaveAddr;
+	uint32_t i = NULL, u32num0 = NULL;
+	if (!mat_proofread(mat, loadmat))
+		return false;
+	u32num0 = mat_size(loadmat);
+	for (i = 0; i < u32num0; ++i) {
+		mat1[i] = mat0[i] * value;
+	}
+	return true;
+}
 
 
 

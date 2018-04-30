@@ -10,8 +10,8 @@ bool main(void)
 
 	//创建mlp图
 	read_bmp_init(128);
-	new_graph_mlp(mlp_t0, 0.1f, _relu_active, 12, 1024);
-	new_graph_mlp(mlp_t1, 0.1f, _softmax_active, 10, 12);
+	GraphStr *mlp_t0 = graph_mlp_create(0.1f, _relu_active, 12, 1024);
+	GraphStr *mlp_t1 = graph_mlp_create(0.1f, _softmax_active, 10, 12);
 	//创建图表 左端点:开始节点,右端点:结尾节点
 	GraphStr *graph_buf[] = { mlp_t0,mlp_t1 };
 
@@ -32,11 +32,11 @@ bool main(void)
 	net.feed_data("D:\\work\\ML\\ML_project\\simaple\\guiyi\\0\\0_", 1, 0);
 
 	//训练
-	for (i = 0; i < 10; ++i) {
+	for (i = 0; i < 5; ++i) {
 		net.train();
 	}
 	//测试验证
-	net.output(_tr_all_graph, _mlp_outmat);
+	net.output(_tr_all_graph, _mlp_gr_op);
 
 	//time_end = clock();
 	//time_end -= time_start;

@@ -10,11 +10,12 @@
 #define _mlp_outmat 0x02
 #define _mlp_gr_mat 0x04
 #define _mlp_tensor 0x07
-#define _mlp_op	   0x08	
-#define _mlp_fi	   0x10 	
+#define _mlp_op	    0x08	
+#define _mlp_fi	    0x10 	
 #define _mlp_fid    0x20
-#define _mlp_fi_all   0x30
-#define _mlp_all    0x3f
+#define _mlp_fi_all 0x30
+#define _mlp_gr_op  0x40
+#define _mlp_all    0x7f
 
 //mlp¿‡
 typedef struct MlpStr {
