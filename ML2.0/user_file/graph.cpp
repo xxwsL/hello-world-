@@ -40,10 +40,13 @@ TensorStr* get_graph_tensor(struct GraphStr *graph, uint8_t direct)
 	case _mlp:
 		return ((mlpstr*)temp_add->graph_data)->outmat;
 		break;
-		//cnn节点
+		//cnn_conv节点
 	case _cnn_conv:
-		//tensor_add = ((cnn*)temp_add->graph_data);
-		return false;
+		return ((cnn_conv*)temp_add->graph_data)->out;
+		break;
+		//cnn_pooling节点
+	case _cnn_pooling:
+		return ((cnn_pooling*)temp_add->graph_data)->out;
 		break;
 		//tensor_c节点
 	case _tensorarch:
@@ -68,7 +71,7 @@ TensorStr* get_graph_tensor(struct GraphStr *graph, uint8_t direct)
 //row:列长
 //return:GraphStr指针
 //创建mlp图
-GraphStr *graph_mlp_create(float op, active_fi_str(fi), uint16_t line, uint16_t row)
+GraphStr *graph_mlp_create(uint16_t line, uint16_t row, float op, active_fi_str(fi))
 {
 	GraphStr *re_graph = new GraphStr;
 	re_graph->graph_type = _mlp;
@@ -109,13 +112,25 @@ bool graph_output(void *graph_add, uint8_t content)
 {
 	GraphStr *graph = (GraphStr*)graph_add;
 	switch(graph->graph_type){
+		//mlp图
 	case _mlp:
 		cout << "mlp_graph : " << endl;
 		mlp_output((MlpStr*)graph->graph_data,content);
 		break;
+		//cnn_conv图
+	case _cnn_conv:
+		cout << "cnn_conv_graph :\n";
+		((cnn_conv*)graph->graph_data)->output(content);
+		break;
+		//cnn_pooling图
+	case _cnn_pooling:
+		cout << "cnn_pooling_graph :\n";
+		((cnn_pooling*)graph->graph_data)->output(content);
+		break;
+		//tensorarch图
 	case _tensorarch:
 		cout << "tensorarchraph : " << endl;
-		tensorarch_output(graph->graph_data,content);
+		tensorarch_output((TensorArch*)graph->graph_data,content);
 		break;
 	default:return false; break;
 	}
@@ -180,13 +195,11 @@ GraphStr *graph_next(GraphStr *in_grpah, uint8_t direct)
 	return false;
 }
 
-
-
 //优化次数:0
 //graph:输入图
 //tensor:输入张量
 //前向传播图操作选择
-bool graph_forward_switch(TensorStr *tensor, struct GraphStr *graph, uint8_t direct, uint16_t nums)
+bool graph_forward_switch(TensorStr *tensor, struct GraphStr *graph, uint8_t direct, uint16_t nums, uint16_t deep)
 {
 	switch (graph->graph_type) {
 		//dnn节点
@@ -195,8 +208,13 @@ bool graph_forward_switch(TensorStr *tensor, struct GraphStr *graph, uint8_t dir
 		break;
 		//cnn节点
 	case _cnn_conv:
+		((cnn_conv*)graph->graph_data)->conv_ot(tensor, deep);
 		break;
+		//池化层
+	case _cnn_pooling:
+		((cnn_pooling*)graph->graph_data)->pooling_ot(tensor, deep);
 		//tensor_arch节点
+		break;
 	case _tensorarch:
 		tensorarch_op((TensorArch*)graph->graph_data, tensor, direct);
 		break;
@@ -221,19 +239,52 @@ bool graph_back_switch(struct GraphStr *l_graph, struct GraphStr *now_graph)
 			break;
 		//当前图的左图为tensorarch
 		case _tensorarch:
-
+			mlp_gr(((TensorArch*)l_graph->graph_data)->r_d_tensor, (MlpStr*)now_graph->graph_data);
+			mlp_error_pass(((TensorArch*)l_graph->graph_data)->r_d_tensor, (MlpStr*)now_graph->graph_data);
+			tensorarch_op((TensorArch*)l_graph->graph_data, ((TensorArch*)l_graph->graph_data)->r_d_tensor,_direct_right);
 			break;
 		default:
 			return false;
 			break;
 		}
 		break;
-	//now_graph为cnn
+	//now_graph为cnn_conv
 	case _cnn_conv:
 		return false;//未实现
 		break;
+	//now_graph为cnn_pooling
+	case _cnn_pooling:
+		switch (l_graph->graph_type) {
+			//当前图左图为mlp
+		case _mlp:
+			((MlpStr*)l_graph->graph_data)->active_fid(((MlpStr*)l_graph->graph_data)->outmat->mat[0], ((MlpStr*)l_graph->graph_data)->outmat->mat[0],NULL);
+			((cnn_pooling*)now_graph->graph_data)->error_pass(((MlpStr*)l_graph->graph_data)->outmat);
+			break;
+			//当前图左图为cnn_conv
+		case _cnn_conv:
+			((cnn_conv*)l_graph->graph_data)->conv_fd();
+			((cnn_pooling*)now_graph->graph_data)->error_pass(((cnn_conv*)l_graph->graph_data)->out);
+			break;
+		default:
+			return false; 
+			break;
+		}
+		break;
 	//now_graph为tensorarch
 	case _tensorarch:
+		switch (l_graph->graph_type) {
+		case _cnn_conv:
+			((cnn_conv*)l_graph->graph_data)->conv_fd();
+			
+			break;
+		case _cnn_pooling:
+			//将tensorarch左的误差张量拷贝到池化层输出张量上
+			tensor_copy(((TensorArch*)now_graph)->l_u_tensor, ((cnn_pooling*)l_graph)->out);
+			break;
+		default:
+			return false; 
+			break;
+		}
 		break;
 	default:
 		return false; 
@@ -294,7 +345,7 @@ bool graph_update(GraphStr *graph, float learmspeed)
 GraphStr *graph_cnn_conv_create(array<uint16_t, 4>kernel_buf, array<uint16_t, 4>out_buf, array<uint8_t, 4>stride_buf, float op_value, active_fi_str(fi))
 {
 	//创建一个图
-	GraphStr *graph = new GraphStr;
+	GraphStr *graph = new GraphStr();
 	//创建一个cnn_conv
 	cnn_conv *cnn_conv_ = new cnn_conv(kernel_buf, out_buf, stride_buf, op_value, fi);
 	//把cnn_conv装载到图
@@ -310,7 +361,7 @@ GraphStr *graph_cnn_conv_create(array<uint16_t, 4>kernel_buf, array<uint16_t, 4>
 //创建卷积层池化图
 GraphStr *graph_cnn_pooling_create(uint16_t line_v, uint16_t row_v, array<uint16_t, 4> out_v, uint8_t type)
 {
-	GraphStr *graph = new GraphStr;
+	GraphStr *graph = new GraphStr();
 	cnn_pooling *pooling = new cnn_pooling(line_v, row_v, out_v, type);
 	graph->graph_data = pooling;
 	graph->graph_type = _cnn_pooling;

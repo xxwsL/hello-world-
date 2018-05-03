@@ -49,6 +49,10 @@ public:
 	bool output(const uint8_t content = _cnn_conv_all);
 	//卷积操作
 	bool conv_ot(const struct TensorStr *tensor, uint16_t deep = 0);
+	//cnn_conv输出求激活函数便导
+	bool conv_fd(void);
+	//求卷积核梯度
+	bool conv_gr(const TensorStr *tensor);
 };
 
 class cnn_pooling {
@@ -68,6 +72,8 @@ public:
 	bool pooling_ot(const struct TensorStr *tensor, const uint16_t deep = 0);
 	//打印函数
 	bool output(const uint8_t content, const uint16_t deep = 0);
+	//误差反向传播
+	bool error_pass(TensorStr *tensor, uint16_t deep = 0);
 private:
 	uint16_t line;
 	uint16_t row;

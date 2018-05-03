@@ -38,7 +38,7 @@ typedef struct MlpStr {
 //mlp节点初始化
 bool mlp_init(mlpstr *mlp, float op, bool (*active_fi) (const struct MatrixStr *mat, struct MatrixStr *loadmat), struct TensorStr *layer);
 //单节点mlp前向过程
-bool mlp_one_op(void *mlp_add, struct TensorStr *inmat, uint16_t nums = 0);
+bool mlp_one_op(MlpStr *mlp, struct TensorStr *inmat, uint16_t nums = 0);
 //创建mlp数据域
 MlpStr *mlp_create(float op, bool (*active_fi) (const struct MatrixStr *mat, struct MatrixStr *loadmat), uint16_t line, uint16_t row);
 //打印mlp
@@ -47,6 +47,7 @@ bool mlp_output(void *mlp_add, uint8_t content);
 bool mlp_gr(struct TensorStr *tensor, MlpStr *r_mlp);
 //输出误差传递
 bool mlp_error_pass(MlpStr *l_mlp, MlpStr* r_mlp);
+bool mlp_error_pass(TensorStr *tensor, MlpStr* mlp);
 //更新mlp网络权重
 bool mlp_update(MlpStr *mlp, float learmspeed);
 

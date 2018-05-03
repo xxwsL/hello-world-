@@ -182,7 +182,7 @@ bool network_l::forward_propaga_step(struct GraphStr *graph,uint8_t direct)
 
 //nums:批数据当前进度
 //神经网络前向传播
-bool network_l::forward_propaga(uint16_t nums)
+bool network_l::forward_propaga(uint16_t nums,uint16_t deep)
 {
 	float error_total = NULL;
 	GraphStr *graph_p = tr.strat_graph;
@@ -192,7 +192,7 @@ bool network_l::forward_propaga(uint16_t nums)
 	graph_p = tr.strat_graph->right_add;
 	while (graph_p){
 		//前向传播一次
-		graph_forward_switch(get_graph_tensor(graph_p, _direct_left), graph_p, _direct_left);
+		graph_forward_switch(get_graph_tensor(graph_p, _direct_left), graph_p, _direct_left, nums, deep);
 		graph_p = graph_p->right_add;
 	}
 	return true;

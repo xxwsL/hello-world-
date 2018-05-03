@@ -95,18 +95,19 @@ bool cnn_conv::output(const uint8_t content)
 	if (content&_cnn_conv_fi){
 		if ((void*)active_fi == (void*)mat_signmoid_par)
 			//signmoid
-			cout<<"激活函数 = signmoid";
+			cout<<"激活函数 = signmoid\n";
 		else if ((void*)active_fi == (void*)mat_tanh_par)
 			//tanh
-			cout << "激活函数 = tanh";
+			cout << "激活函数 = tanh\n";
 		else if ((void*)active_fi == (void*)mat_relu_par)
 			//relu
-			cout << "激活函数 = relu";
+			cout << "激活函数 = relu\n";
 		else if ((void*)active_fi == (void*)mat_softmax_par)
 			//softmax
-			cout << "激活函数 = softmax";
+			cout << "激活函数 = softmax\n";
 		else
 			cout << "激活函数 = NULL";
+		cout << "\n";
 	}
 	return true;
 }
@@ -117,25 +118,55 @@ bool cnn_conv::output(const uint8_t content)
 bool cnn_conv::conv_ot(const struct TensorStr *tensor, uint16_t deep) {
 	uint16_t i = NULL, j = NULL;
 	uint16_t num0 = tensor->height, num1 = kernel->height;
-	uint16_t offset0 = deep*tensor->height, offset1 = deep*out->height;
-	//输入张量轮换次数
-	for (i = 0; i < num0; ++i) {
-		//卷积核轮换次数
-		for (j = 0; j < num1; ++j) {
+	uint16_t offset0 = deep*tensor->height, offset1 = deep*out->height, offset2 = 0;
+	//卷积核轮换次数
+	for (j = 0; j < num1; ++j) {
+		//输入张量轮换次数
+		for (i = 0; i < num0; ++i) {
 			//卷积前对输出矩阵清0
-			mat_zero(out->mat[offset1 + j]);
+			mat_zero(out->mat[offset2 + offset1 + i]);
 			//矩阵卷积
-			mat_conv(tensor->mat[offset0 + i], kernel->mat[j], out->mat[offset1 + j], stride[0], stride[1], stride[3]);
+				(tensor->mat[offset0 + i], kernel->mat[j], out->mat[offset2 + offset1 + i], stride[0], stride[1], stride[3]);
 			//卷积结果加上偏置
 			if (op[0]) {
-				mat_addto_value(out->mat[offset1 + j],op[0]);
+				mat_addto_value(out->mat[offset2 + offset1 + i],op[0]);
 			}
 			//使用激活函数激活
-			active_fi(out->mat[offset1 + j], out->mat[offset1 + j]);
+			active_fi(out->mat[offset2 + offset1 + i], out->mat[offset2 + offset1 + i]);
 		}
+		offset2 += num0;
 	}
 	return true;
 }
+
+//conv层输出求激活函数便导
+bool cnn_conv::conv_fd(void)
+{
+	uint16_t i = NULL, num0 = out->height;
+	for (i = 0; i < num0; ++i) {
+		active_fid(out->mat[i], out->mat[i], NULL);
+	}
+	return true;
+}
+
+bool cnn_conv::conv_gr(const TensorStr *tensor)
+{
+	uint16_t i = 0, j = 0;
+	uint16_t u16_offset0 = 0;
+	//误差张量长度
+	for (i = 0; i < out->height; ) {
+		//输入张量长度
+		for (j = 0; j < tensor->height; ++j) {
+			mat_conv_gr(out->mat[i],tensor->mat[j],kernel_gr->mat[u16_offset0],stride[0],stride[1]);
+			++i;
+		}
+		//更新卷积梯度张量长度偏置
+		u16_offset0++;
+	}
+	return true;
+}
+
+
 
 
 //cnn_pooling默认构造函数
@@ -221,6 +252,10 @@ bool cnn_pooling::output(const uint8_t content, const uint16_t deep)
 	}
 	//打印最大值池化后记录的原张量最大值坐标
 	if (content&_cnn_pooling_coor) {
+		if (!coor_x) {
+			cout << "NO coor\n";
+			return false;
+		}
 		cout << "coor_x :\n";
 		tensor_output(coor_x, deep);
 		cout << "coor_y :\n";
@@ -229,4 +264,23 @@ bool cnn_pooling::output(const uint8_t content, const uint16_t deep)
 	return true;
 }
 
-
+//cnn池化层误差反向传播
+bool cnn_pooling::error_pass(TensorStr *tensor, uint16_t deep)
+{
+	uint16_t i = NULL, num0 = tensor->height;
+	switch (ot_type){
+		//均值池化模式
+	case _cnn_pooling_aver:
+		for (i = 0; i < num0; ++i) {
+			mat_pooling_redu(out->mat[i], line, row, tensor->mat[i]);
+		}
+		break;
+		//最大值池化模式
+	case _cnn_pooling_max:
+		break;
+	default:
+		return false;
+		break;
+	}
+	return true;
+}

@@ -43,9 +43,8 @@ bool mlp_init(mlpstr *mlp, float op, active_fi_str(fi), TensorStr *layer)
 //单节点mlp前向过程
 //mlp:mlp节点
 //inmat:输入矩阵
-bool mlp_one_op(void *mlp_add,TensorStr *inmat, uint16_t nums)
+bool mlp_one_op(MlpStr *mlp,TensorStr *inmat, uint16_t nums)
 {
-	MlpStr *mlp = (MlpStr*)mlp_add;
 	mat_mult_par(mlp->layer->mat[0], inmat->mat[nums], mlp->outmat->mat[0]);
 	mat_addto_value(mlp->outmat->mat[0], mlp->op);
 	mlp->active_fi(mlp->outmat->mat[0], mlp->outmat->mat[0]);
@@ -238,6 +237,40 @@ bool mlp_error_pass(MlpStr *l_mlp, MlpStr* r_mlp)
 		}
 		line_offset0 = NULL;
 		mat_0[i] *= sum_temp_0;
+		sum_temp_0 = 0;
+	}
+	return true;
+}
+
+//优化:0
+//tensor:输入张量
+//mlp:当前mlp层
+//输出误差传递
+bool mlp_error_pass(TensorStr *tensor, MlpStr* mlp)
+{
+	uint16_t  i = NULL, j = NULL, nums_0 = NULL, nums_1 = NULL;
+	float *mat_0 = NULL, *mat_1 = NULL, *mat_2 = NULL, sum_temp_0 = NULL;
+	uint32_t line_offset0 = NULL;
+
+	//l_mlp输出矩阵的行长(更新的误差个数)
+	nums_0 = tensor->mat[0]->line;
+	//r_mlp输出矩阵的行长(每更新一个误差进行的加法数)
+	nums_1 = mlp->outmat->mat[0]->line;
+	//当前层要更新的误差矩阵的载体
+	mat_0 = (float*)tensor->mat[0]->SaveAddr;
+	//权重矩阵,用于更新误差矩阵
+	mat_1 = (float*)mlp->layer->mat[0]->SaveAddr;
+	//上一层误差矩阵载体
+	mat_2 = (float*)mlp->outmat->mat[0]->SaveAddr;
+	//更新并传递误差
+	for (i = NULL; i < nums_0; ++i) {
+		for (j = NULL; j < nums_1; ++j) {
+			sum_temp_0 += mat_2[j] * mat_1[line_offset0 + i];
+			line_offset0 += nums_0;
+		}
+		line_offset0 = NULL;
+		mat_0[i] = sum_temp_0;
+		sum_temp_0 = 0;
 	}
 	return true;
 }

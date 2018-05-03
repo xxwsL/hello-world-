@@ -8,10 +8,11 @@ bool main(void)
 	long time_start = NULL, time_end = NULL;
 	/*network*/
 
+	time_start = clock();	
 	//创建mlp图
 	read_bmp_init(128);
-	GraphStr *mlp_t0 = graph_mlp_create(0.1f, _relu_active, 12, 1024);
-	GraphStr *mlp_t1 = graph_mlp_create(0.1f, _softmax_active, 10, 12);
+	GraphStr *mlp_t0 = graph_mlp_create(12, 1024, 0.1f, _relu_active);
+	GraphStr *mlp_t1 = graph_mlp_create(10, 12, 0.1f, _softmax_active);
 	//创建图表 左端点:开始节点,右端点:结尾节点
 	GraphStr *graph_buf[] = { mlp_t0,mlp_t1 };
 
@@ -38,9 +39,9 @@ bool main(void)
 	//测试验证
 	net.output(_tr_all_graph, _mlp_gr_op);
 
-	//time_end = clock();
-	//time_end -= time_start;
-	//printf("time = %ld h %ld m %ld s %ld ms\n", time_end / 3600000l, time_end % 3600000l / 60000l, time_end % 60000l / 1000l, time_end % 1000l);
+	time_end = clock();
+	time_end -= time_start;
+	printf("time = %ld h %ld m %ld s %ld ms\n", time_end / 3600000l, time_end % 3600000l / 60000l, time_end % 60000l / 1000l, time_end % 1000l);
 	while (1);
 	return true;
 }

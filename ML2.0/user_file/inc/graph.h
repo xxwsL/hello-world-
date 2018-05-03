@@ -2,6 +2,8 @@
 #define _graph_h_
 #include "xxwsL.h"
 
+#define _graph_all 0xff
+
 //图操作方向
 #define _direct_left  0x01
 #define _direct_up	  0x02
@@ -13,7 +15,7 @@
 #define _mlp		 0x01
 #define _cnn_conv	 0x02
 #define _cnn_pooling 0x04
-#define _tensorarch  0x10
+#define _tensorarch  0x08
 
 //图链初始化
 #define new_graph_chain(name)  graph_chain_init(name,sizeof(name)/sizeof(struct GraphStr*))
@@ -38,9 +40,9 @@ typedef struct GraphStr {
 //提取上一层节点的张量
 struct TensorStr *get_graph_tensor(struct GraphStr *graph, uint8_t direct);
 //前向传播图操作选择
-bool graph_forward_switch(struct TensorStr *tensor, struct GraphStr *graph, uint8_t direct, uint16_t nums = 0);
+bool graph_forward_switch(struct TensorStr *tensor, struct GraphStr *graph, uint8_t direct, uint16_t nums = 0, uint16_t deep = 0);
 //创建mlp图
-GraphStr *graph_mlp_create(float op, bool (*active_fi) (const struct MatrixStr *mat, struct MatrixStr *loadmat), uint16_t line, uint16_t row);
+GraphStr *graph_mlp_create(uint16_t line, uint16_t row, float op, bool (*active_fi) (const struct MatrixStr *mat, struct MatrixStr *loadmat));
 //创建tensorarch图
 GraphStr *graph_tensorarch_create(array<uint16_t, 4>l_u_buf, array<uint16_t, 4>r_d_buf);
 //打印图

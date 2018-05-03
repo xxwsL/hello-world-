@@ -23,9 +23,9 @@ TensorStr *tensor_create(const uint16_t line, const uint16_t row, const uint16_t
 //装载张量
 bool tensor_load(void *tensor_add, MatrixStr **vetor,const uint16_t vetor_len, const uint16_t deep = 1);
 //张量转移图运算
-bool tensorarch_op(TensorArch *tensorarch_add, TensorStr *in_tensor, const uint8_t direct,const uint16_t deep = 1);
+bool tensorarch_op(TensorArch *tensorarch_add, TensorStr *in_tensor, const uint8_t direct,const uint16_t deep = 0);
 //张量的大小
-uint32_t tensor_size(TensorStr *tensor);
+uint32_t tensor_element_size(TensorStr *tensor);
 //打印张量
 bool tensor_output(void *tensor_add, uint16_t deep = 0);
 //张量转移图装载
@@ -39,9 +39,15 @@ TensorArch *tensorarch_create(array<uint16_t, 4>l_u_buf, array<uint16_t, 4>r_d_b
 //释放张量转移结构内存
 bool tensorarch_delete(TensorArch *tenasorarch);
 //打印tensorarch图
-bool tensorarch_output(void *tensoarch_add, uint8_t direct, uint16_t deep = 0);
+bool tensorarch_output(TensorArch *tensorarch, uint8_t direct, uint16_t deep = 0);
 //张量赋值
 bool tensor_assignment(TensorStr *tensor, float value = 0.0f);
+//张量拷贝
+bool tensor_copy(const TensorStr *tensor, TensorStr *loadtensor);
+//张量升序赋值
+bool tensor_up_assign(TensorStr *tensor, const float value);
+//返回张量矩阵数量
+uint32_t tensor_mat_size(const TensorStr *tensor);
 
 
 

@@ -66,7 +66,7 @@ public:
 	//神经网络前向单步操作
 	bool forward_propaga_step(struct GraphStr *graph, uint8_t direct);
 	//神经网络前向传播
-	bool forward_propaga(uint16_t nums = 0);
+	bool forward_propaga(uint16_t nums = 0,uint16_t deep = 0);
 	//计算输出总误差
 	float total_error(uint16_t label);
 	//神经网络反向传播

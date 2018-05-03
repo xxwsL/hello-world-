@@ -99,9 +99,11 @@ bool mat_rand_normal(MatStr *mat);
 //矩阵上下翻转
 bool f32mat_up_down_change(MatStr *mat);
 //复制矩阵到另一个矩阵
-bool mat_copy(MatrixStr *loadmat, MatrixStr *inmat, uint32_t nums);
+bool mat_copy(MatrixStr *inmat, MatrixStr *loadmat, uint32_t nums);
 //释放矩阵容器内存(不释放容器里数据)
 bool mat_vetor_delete(MatrixStr **vetor);
+//矩阵升序赋值
+bool mat_up_assign(MatrixStr *mat, const float value = 0);
 
 //求矩阵协方差
 MatStr* mat_covar(const MatStr *mat);
@@ -154,5 +156,11 @@ bool mat_conv(const MatrixStr *in_mat, MatrixStr *kernel, MatrixStr *load_mat, u
 bool mat_pooling(const MatrixStr *mat, uint16_t pool_line, uint16_t pool_row, MatrixStr *loadmat);
 //矩阵所有元素成一个数
 bool mat_mult_element(const MatrixStr *mat, float value, MatrixStr *loadmat);
+//均值池化还原
+bool mat_pooling_redu(const MatrixStr *mat, const uint16_t pool_line, const uint16_t pool_row, MatrixStr *loadmat);
+//卷积矩阵求梯度
+bool mat_conv_gr(const MatrixStr *error_mat, const MatrixStr *in_mat, MatrixStr *loadmat, const uint16_t line_stride, const uint16_t row_stride);
+//卷积均值误差传递
+bool mat_conv_back(const MatrixStr *error_mat, const MatrixStr *kernel_mat, MatrixStr *loadmat, const uint16_t stride_line, const uint16_t stride_row);
 
 #endif // ! _matrix_ot_h_
