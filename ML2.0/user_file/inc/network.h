@@ -41,7 +41,7 @@ typedef struct Train {
 	//期望矩阵集合
 	struct TensorStr *target_set;
 	//label
-	uint16_t *label;
+	uint16_t label;
 	//输入矩阵
 	struct TensorStr *in_train;
 	//损失函数
@@ -53,30 +53,30 @@ class network_l {
 public:
 	train tr;
 	//构造函数
-	network_l(float *tr_message, struct GraphStr *start_graph, struct TensorStr *target_set, struct TensorStr *in_train);
+	network_l(float *tr_message, struct GraphStr *start_graph, struct TensorStr *target_set, TensorStr *in_tensor);
 	network_l();
 	//析构函数
 	~network_l();
 	//打印神经网络类的内容
 	bool output(uint16_t content_0 = 0, uint8_t content_1 = 0);
 	//喂数据
-	bool feed_data(const char *simaple_file, const uint32_t i, uint16_t label);
-	//批量喂数据
-	bool batch_feed_data(const char *simaple_file, const uint32_t *i, uint16_t label);
+	bool feed_data(const char *simaple_file, const uint32_t i, const uint16_t label);
+	bool feed_data(struct TensorStr *tensor, const uint16_t label);
+	bool feed_data(void);
 	//神经网络前向单步操作
 	bool forward_propaga_step(struct GraphStr *graph, uint8_t direct);
 	//神经网络前向传播
-	bool forward_propaga(uint16_t nums = 0,uint16_t deep = 0);
+	bool forward_propaga(void);
 	//计算输出总误差
-	float total_error(uint16_t label);
+	float total_error(void);
 	//神经网络反向传播
-	bool back_propaga(uint16_t label, uint16_t nums = 0);
+	bool back_propaga(void);
 	//更新神经网络
-	bool network_l::update(void);
+	bool update(void);
 	//训练
 	int train(void);
 	//测试
-	float test(uint16_t label = 0);
+	float test(void);
 private:
 };
 

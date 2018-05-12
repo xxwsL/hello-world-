@@ -43,9 +43,9 @@ bool mlp_init(mlpstr *mlp, float op, active_fi_str(fi), TensorStr *layer)
 //单节点mlp前向过程
 //mlp:mlp节点
 //inmat:输入矩阵
-bool mlp_one_op(MlpStr *mlp,TensorStr *inmat, uint16_t nums)
+bool mlp_one_op(MlpStr *mlp,TensorStr *inmat)
 {
-	mat_mult_par(mlp->layer->mat[0], inmat->mat[nums], mlp->outmat->mat[0]);
+	mat_mult_par(mlp->layer->mat[0], inmat->mat[0], mlp->outmat->mat[0]);
 	mat_addto_value(mlp->outmat->mat[0], mlp->op);
 	mlp->active_fi(mlp->outmat->mat[0], mlp->outmat->mat[0]);
 	return true;
@@ -82,6 +82,7 @@ MlpStr *mlp_create(float op, active_fi_str(fi), uint16_t line, uint16_t row)
 		remlp->gr_mat->mat[0] = mat_create(line, row, f32Flag); 
 		mat_zero(remlp->gr_mat->mat[0]);
 		mat_rand_normal(remlp->layer->mat[0]);
+		//mat_assign(remlp->layer->mat[0], 1.0f);
 		remlp->op = op;
 		remlp->active_fi = fi;
 		//激活函数求导函数装载
@@ -100,6 +101,7 @@ MlpStr *mlp_create(float op, active_fi_str(fi), uint16_t line, uint16_t row)
 		else
 			remlp->active_fid = NULL;
 	}
+	remlp->op_gr = 0;
 	return remlp;
 }
 
@@ -156,19 +158,21 @@ bool mlp_output(void *mlp_add , uint8_t content)
 			cout << fid << "= signmoid_der" << endl << endl;
 		else if ((void*)mlp->active_fid == (void*)_tanh_fd)
 			//tanh
-			cout << fid << "tanh_der" << endl << endl;
+			cout << fid << "= tanh_der" << endl << endl;
 		else if ((void*)mlp->active_fid == (void*)_relu_fd)
 			//relu
-			cout << fid << "relu_der" << endl << endl;
+			cout << fid << "= relu_der" << endl << endl;
 		else if ((void*)mlp->active_fid == (void*)_softmax_fd)
 			//softmax
-			cout << "fid" << "softmax_der" << endl << endl;
+			cout << "fid" << "= softmax_der" << endl << endl;
 		else
 			cout << fid <<  "NULL" << endl << endl;
 	}
 	if (content&_mlp_gr_op) {
 		cout << "mlp_gr_op = " << mlp->op_gr<<"\n\n";
 	}
+	cout << "_______________________________________________________________________________";
+	cout << "\n\n";
 	return true;
 }
 
@@ -287,5 +291,16 @@ bool mlp_update(MlpStr *mlp,float learmspeed)
 		mat_0[i] -= learmspeed * mat_1[i];
 	}
 	mlp->op -= learmspeed*mlp->op_gr;
+	return true;
+}
+
+//删除mlp
+bool mlp_create(MlpStr* &mlp)
+{
+	tensor_delete(mlp->gr_mat);
+	tensor_delete(mlp->layer);
+	tensor_delete(mlp->outmat);
+	delete mlp;
+	mlp = NULL;
 	return true;
 }

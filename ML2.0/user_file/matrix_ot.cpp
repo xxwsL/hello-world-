@@ -20,7 +20,7 @@ bool output(const MatStr *mat)
 			for (i = 0; i < mat->line; i++) {
 				for (j = 0; j < mat->row; j++) {
 #ifdef Simulation										//仿真模式
-					printf("%d\t", *(i16add + j));		//制表方式输出矩阵
+					printf("%d\t", i16add[j]);		//制表方式输出矩阵
 #else
 //此处加不是仿真的执行代码
 #endif
@@ -38,7 +38,7 @@ bool output(const MatStr *mat)
 			for (i = 0; i < mat->line; i++) {
 				for (j = 0; j < mat->row; j++) {
 #ifdef Simulation										//仿真模式
-					printf("%f\t", *(f32add + j));		//制表方式输出矩阵
+					printf("%f\t", f32add[j]);						//制表方式输出矩阵
 #else
 //此处加不是仿真的执行代码
 #endif
@@ -296,7 +296,7 @@ MatStr* mat_create(uint16_t mat_line, uint16_t mat_row, uint16_t mat_type)
 //删除矩阵并释放矩阵内存
 //mat:要释放的矩阵指针
 //return:位宽8标志位
-bool mat_delete(MatStr *mat)
+bool mat_delete(MatStr* &mat)
 {
 	delete[] mat->SaveAddr;
 	mat->SaveAddr = NULL;
@@ -310,7 +310,7 @@ bool mat_delete(MatStr *mat)
 //mat:输入赋值矩阵
 //value:有效值
 //return:位宽8标志位
-bool mat_assignment(MatStr *mat,float value)
+bool mat_assign(MatStr *mat,float value)
 {
 	int16_t *i16add=NULL;
 	float *f32add=NULL;
@@ -345,7 +345,7 @@ bool mat_assignment(MatStr *mat,float value)
 //return:位宽8标志位
 bool mat_zero(MatStr *mat)
 {
-	if (mat_assignment(mat, 0))
+	if (mat_assign(mat, 0))
 		return true;
 	else
 		return false;
@@ -370,26 +370,26 @@ uint32_t mat_size(const MatStr *mat)
 float mat_norm2(const MatStr *mat)
 {
 	int16_t *i16add;
-	uint32_t mat_size=0;
+	uint32_t matsize=0;
 	uint32_t i=0;
 	float *f32add,norm2 = 0;
-	mat_size=mat_tf.mat_size(mat);
+	matsize= mat_size(mat);
 	if (!mat) {
 		return false;
 	}
-	if ((mat_size == 0)||(mat->row!=1)) {
+	if ((matsize == 0)||(mat->row!=1)) {
 		return error;
 	}
 	switch (MatTypeFlag&mat->flag){
 		case i16Flag:
 			i16add = (int16_t*)mat->SaveAddr;
-			for (i = 0; i < mat_size; ++i){
+			for (i = 0; i < matsize; ++i){
 				norm2 += (float)((*(i16add + i)) * (*(i16add + i)));
 			}
 			break;
 		case f32Flag:
 			f32add = (float*)mat->SaveAddr;
-			for (i = 0; i < mat_size; ++i) {
+			for (i = 0; i < matsize; ++i) {
 				norm2 += (float)((*(f32add + i)) * (*(f32add + i)));
 			}
 			break;
@@ -720,24 +720,21 @@ bool mat_qr(const MatStr *mat,MatStr *q_mat,MatStr *r_mat)			//debug
 //q_mat:左加float矩阵a
 //r_mat:右加float矩阵b
 //return:float型矩阵
-MatStr* mat_add(const MatStr *mat_a,const MatStr *mat_b)
+bool mat_add(const MatStr *mat_a,const MatStr *mat_b, MatrixStr* &loadmat)
 {
-	uint32_t i=NULL,matsize=NULL;
-	float *f32mata_add = NULL, *f32matb_add = NULL,*f32remat_add;
-	MatStr *remat;
-	if ((!mat_a) || (!mat_b))
+	uint32_t i,matsize;
+	float *mat0, *mat1, *mat2;
+	if ((mat_a->line != mat_b->line) || (mat_a->row != mat_b->row)) {
 		return false;
-	if ((mat_a->line != mat_b->line) || (mat_a->row != mat_b->row))
-		return false;
-	matsize = mat_size(mat_a);
-	f32mata_add = (float*)mat_a->SaveAddr;
-	f32matb_add = (float*)mat_b->SaveAddr;
-	remat=mat_create(mat_a->line,mat_a->row,f32Flag);
-	f32remat_add = (float*)remat->SaveAddr;
-		for (i = 0; i <matsize; ++i) {
-		*(f32remat_add + i) = *(f32mata_add + i) + (*(f32matb_add + i));
 	}
-	return remat;
+	matsize = mat_size(mat_a);
+	mat0 = (float*)mat_a->SaveAddr;
+	mat1 = (float*)mat_b->SaveAddr;
+	mat2 = (float*)loadmat->SaveAddr;
+	for (i = 0; i < matsize; ++i) {
+		mat2[i] = mat0[i] + mat1[i];
+	}
+		return true;
 }
 
 //优化次数:0
@@ -775,7 +772,7 @@ bool mat_sub_par(const MatStr *mat_a, const MatStr *mat_b,MatStr *loadmat)
 {
 	uint32_t i = NULL, matsize = NULL;
 	float *f32mata_add = NULL, *f32matb_add = NULL, *f32remat_add;
-	if (mat_proofread(mat_a,mat_b))
+	if (!mat_proofread(mat_a,mat_b))
 		return false;
 	matsize = mat_size(mat_a);
 	f32mata_add = (float*)mat_a->SaveAddr;
@@ -949,7 +946,7 @@ float f32mat_dotmult_par(const MatStr *mat_l,const MatStr *mat_r,MatStr *loadmat
 		mat_ladd = (float*)mat_l->SaveAddr;
 		mat_radd = (float*)mat_r->SaveAddr;
 		for (i = 0; i < matsize; ++i) {
-			redate += (*(mat_ladd++))*(*(mat_radd)++);
+			redate += mat_ladd[i]*mat_radd[i];
 		}
 		return redate;
 	}
@@ -958,7 +955,7 @@ float f32mat_dotmult_par(const MatStr *mat_l,const MatStr *mat_r,MatStr *loadmat
 		mat_radd = (float*)mat_r->SaveAddr;
 		loadmat_add = (float*)loadmat->SaveAddr;
 		for (i = 0; i < matsize; ++i) {
-			*(loadmat_add++) = (*(mat_ladd++))*(*(mat_radd)++);
+			loadmat_add[i] = mat_ladd[i]*mat_radd[i];
 		}
 	}
 	return true;
@@ -1039,9 +1036,8 @@ bool mat_relu_par(const MatStr *mat,MatStr *loadmat)
 	return true;
 }
 
-//优化次数:0
-//矩阵似正态随机赋值
 //mat:输入矩阵
+//矩阵似正态随机赋值
 bool mat_rand_normal(MatStr *mat)
 {
 	float *f32add = NULL,temp=NULL,tempsum=NULL;
@@ -1446,6 +1442,7 @@ bool mat_conv(const MatrixStr *in_mat, MatrixStr *kernel, MatrixStr *load_mat, u
 	if ((u16_num0 != load_mat->line)&&(u16_num1 != load_mat->row)) {
 		return false;
 	}
+	mat_zero(load_mat);
 	//卷积核的尺寸
 	u16_num0 = kernel->line;
 	u16_num1 = kernel->row;
@@ -1466,7 +1463,7 @@ bool mat_conv(const MatrixStr *in_mat, MatrixStr *kernel, MatrixStr *load_mat, u
 				for (k = 0; k < u16_num0; ++k) {
 					//卷积核行控制
 					for (l = 0; l < u16_num1; ++l) {
-						mat2[offset2] += mat0[offset0 + l] * mat1[offset1 + l];
+						mat2[offset2] = mat0[offset0 + l] * mat1[offset1 + l];
 					}
 					//输入矩阵当前位置加一行
 					offset0 += in_mat->row;
@@ -1487,7 +1484,7 @@ bool mat_conv(const MatrixStr *in_mat, MatrixStr *kernel, MatrixStr *load_mat, u
 }
 
 //矩阵均值池化
-bool mat_pooling(const MatrixStr *mat, uint16_t pool_line, uint16_t pool_row, MatrixStr *loadmat)
+bool mat_aver_pooling(const MatrixStr *mat, uint16_t pool_line, uint16_t pool_row, MatrixStr *loadmat)
 {
 	uint16_t num0 = mat->line / pool_line, num1 = mat->row / pool_row, num2 = mat->row - num1*pool_row;
 	uint16_t i = NULL, j = NULL, k = NULL, l = NULL;
@@ -1513,7 +1510,7 @@ bool mat_pooling(const MatrixStr *mat, uint16_t pool_line, uint16_t pool_row, Ma
 }
 
 //矩阵所有元素乘一个数
-bool mat_mult_element(const MatrixStr *mat, float value, MatrixStr *loadmat)
+bool mat_mult_element(const MatrixStr *mat, const float value, MatrixStr *loadmat)
 {
 	float *mat0 = (float*)mat->SaveAddr, *mat1 = (float*)loadmat->SaveAddr;
 	uint32_t i = NULL, u32num0 = NULL;
@@ -1527,21 +1524,21 @@ bool mat_mult_element(const MatrixStr *mat, float value, MatrixStr *loadmat)
 }
 
 //均值池化还原
-bool mat_pooling_redu(const MatrixStr *mat, const uint16_t pool_line, const uint16_t pool_row, MatrixStr *loadmat)
+bool mat_aver_pooling_redu(const MatrixStr *mat, const uint16_t pool_line, const uint16_t pool_row, MatrixStr *loadmat)
 {
 	uint16_t i = NULL, j = NULL, k = NULL, l = NULL;
-	uint16_t u16num0 = mat->line, u16num1 = mat->row, u16num2 = loadmat->row;
 	uint32_t u32num0 = pool_line*loadmat->row;
 	uint32_t offset0 = NULL, offset1 = NULL;
 	float *mat0 = (float*)mat->SaveAddr, *mat1 = (float*)loadmat->SaveAddr;
-	for (i = 0; i < u16num0; ++i) {
-		for (j = 0; j < u16num1; ++j) {
+	for (i = 0; i < mat->line; ++i) {
+		for (j = 0; j < mat->row; ++j) {
 			offset0 = u32num0*i + pool_row*j;
+			//步伐控制循环
 			for (k = 0; k < pool_line; ++k) {
 				for (l = 0; l < pool_row; ++l) {
 					mat1[offset0 + l] *= mat0[offset1];
 				}
-				offset0 += u16num2;
+				offset0 += loadmat->row;
 			}
 			offset1++;
 		}
@@ -1550,7 +1547,7 @@ bool mat_pooling_redu(const MatrixStr *mat, const uint16_t pool_line, const uint
 }
 
 //卷积矩阵求梯度
-bool mat_conv_gr(const MatrixStr *error_mat, const MatrixStr *in_mat,MatrixStr *loadmat, const uint16_t line_stride,const uint16_t row_stride)
+bool mat_conv_gr(const MatrixStr *error_mat, const MatrixStr *in_mat,MatrixStr* &loadmat, const uint16_t line_stride,const uint16_t row_stride)
 {
 	uint16_t u16_i = 0, u16_j = 0, u16_k = 0, u16_p = 0;
 	uint32_t u32num0 = in_mat->row*loadmat->line;
@@ -1559,6 +1556,37 @@ bool mat_conv_gr(const MatrixStr *error_mat, const MatrixStr *in_mat,MatrixStr *
 	mat_zero(loadmat);
 	//误差矩阵尺寸
 	for (u16_k = 0; u16_k < error_mat->line;++u16_k) {
+		u32offset1 = u16_k * in_mat->row * line_stride;
+		for (u16_p = 0; u16_p < error_mat->row; ++u16_p) {
+			//装载矩阵行长
+			for (u16_i = 0; u16_i < loadmat->line; ++u16_i) {
+				//装载矩阵列长
+				for (u16_j = 0; u16_j < loadmat->row; ++u16_j) {
+					mat2[u32offset0] += mat0[u32offset3] * mat1[u16_j + u32offset1 + u32offset2];
+					u32offset0++;
+				}
+				u32offset2 += loadmat->row;
+			}
+			u32offset0 = 0;
+			//in_mat初始位置&error_mat偏置更新
+			u32offset1 += row_stride;
+			u32offset2 = 0;
+			++u32offset3;
+		}
+	}
+	return true;
+}
+
+//卷积矩阵求梯度
+bool mat_conv_gr(const MatrixStr *error_mat, const MatrixStr *in_mat, MatrixStr *loadmat, const uint16_t line_stride, const uint16_t row_stride)
+{
+	uint16_t u16_i = 0, u16_j = 0, u16_k = 0, u16_p = 0;
+	uint32_t u32num0 = in_mat->row*loadmat->line;
+	uint32_t u32offset0 = 0, u32offset1 = 0, u32offset2 = 0, u32offset3 = 0;
+	float *mat0 = (float*)error_mat->SaveAddr, *mat1 = (float*)in_mat->SaveAddr, *mat2 = (float*)loadmat->SaveAddr;
+	mat_zero(loadmat);
+	//误差矩阵尺寸
+	for (u16_k = 0; u16_k < error_mat->line; ++u16_k) {
 		u32offset1 = u16_k * in_mat->row * line_stride;
 		for (u16_p = 0; u16_p < error_mat->row; ++u16_p) {
 			u32offset0 = 0;
@@ -1593,8 +1621,8 @@ bool mat_up_assign(MatrixStr *mat,const float value)
 	return true;
 }
 
-//卷积均值误差传递
-bool mat_conv_back(const MatrixStr *error_mat,const MatrixStr *kernel_mat,MatrixStr *loadmat,const uint16_t stride_line,const uint16_t stride_row)
+//卷积误差传递
+bool mat_conv_pass(const MatrixStr *error_mat,const MatrixStr *kernel_mat,MatrixStr *loadmat,const uint16_t stride_line,const uint16_t stride_row)
 {
 	uint16_t i = 0, j = 0, k = 0, l = 0;
 	uint32_t offset0 = 0, offset1 = 0, offset2 = 0, offset3 = loadmat->row * stride_line, offset4 = 0;

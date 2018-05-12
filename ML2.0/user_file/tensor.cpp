@@ -57,7 +57,7 @@ bool tensor_load(void *tensor_add, MatrixStr **vetor,const uint16_t vetor_len, c
 //in_tensor:输入张量
 //direct:转移方向
 //return:返回bool标志位
-bool tensorarch_op(TensorArch *tensorarch,TensorStr *in_tensor,const uint8_t direct,const uint16_t deep)
+bool tensorarch_op(TensorArch *arch,const TensorStr *in_tensor,const uint8_t direct)
 {
 	uint8_t *buf = NULL, *flag_add0 = NULL;
 	uint32_t i = NULL;
@@ -67,19 +67,19 @@ bool tensorarch_op(TensorArch *tensorarch,TensorStr *in_tensor,const uint8_t dir
 	switch (direct){
 		//转换方向左
 		case _direct_left:
-			tensor_p = tensorarch->r_d_tensor;
+			tensor_p = arch->r_d_tensor;
 			break;
 		//转换方向上
 		case _direct_up:
-			tensor_p = tensorarch->r_d_tensor;
+			tensor_p = arch->r_d_tensor;
 			break;
 		//转换方向右
 		case _direct_right:
-			tensor_p = tensorarch->l_u_tensor;
+			tensor_p = arch->l_u_tensor;
 			break;
 		//转换方向下
 		case _direct_down:
-			tensor_p = tensorarch->l_u_tensor;
+			tensor_p = arch->l_u_tensor;
 			break;
 		default:
 			return false;break;
@@ -94,7 +94,7 @@ bool tensorarch_op(TensorArch *tensorarch,TensorStr *in_tensor,const uint8_t dir
 	//创建缓存buf
 	buf = new uint8_t[u32num0 * 4];
 	flag_add0 = buf;
-	u32num0 = in_tensor->deep * in_tensor->height;
+	u32num0 = tensor_mat_size(in_tensor);
 	//把输入张量里的数据拷贝到缓存buf里
 	for (i = NULL; i < u32num0;++i) {
 		temp_size = mat_size(in_tensor->mat[i]) * 4;
@@ -104,7 +104,7 @@ bool tensorarch_op(TensorArch *tensorarch,TensorStr *in_tensor,const uint8_t dir
 	}
 	//把缓存buf的数据拷贝到装载张量里
 	flag_add0 = buf; 
-	u32num0 = tensor_p->deep * tensor_p->height;
+	u32num0 = tensor_mat_size(tensor_p);
 	for (i = NULL; i < u32num0; ++i) {
 		temp_size = mat_size(tensor_p->mat[i]) * 4; 
 		memcpy(tensor_p->mat[i]->SaveAddr, flag_add0, temp_size);
@@ -115,11 +115,11 @@ bool tensorarch_op(TensorArch *tensorarch,TensorStr *in_tensor,const uint8_t dir
 	return true;
 }
 
-//优化次数:0
 //获得张量尺寸
 //tensor:输入张量
 //return:返回张量尺寸
-uint32_t tensor_element_size(TensorStr *tensor)
+//获得张量尺寸
+uint32_t tensor_element_size(const TensorStr *tensor)
 {
 	uint16_t i = NULL;
 	uint32_t size = NULL;
@@ -130,21 +130,35 @@ uint32_t tensor_element_size(TensorStr *tensor)
 	return size;
 }
 
-//优化次数:0
 //打印张量
 //tensor:输入张量
-//return:bool标志位
-bool tensor_output(void *tensor_add, uint16_t deep)
+//deep:选择深度层
+bool tensor_output(const TensorStr *tensor, uint16_t deep)
 {
-	TensorStr *tensor = NULL;
-	tensor = (TensorStr*)tensor_add;
-	uint16_t i = NULL, height = tensor->height;
-	uint32_t offset = tensor->deep * deep;
-
-		for (i = NULL; i < height; ++i) {
+	uint16_t i;
+	uint32_t u32offset0 = tensor->height * deep;
+	//选择某深度层输出
+		for (i = NULL; i < tensor->height; ++i) {
 			printf("layer : %d\n", i);
-			output(tensor->mat[i+offset]);
+			output(tensor->mat[i + u32offset0]);
 		}
+		return true;
+}
+
+//打印张量
+//tensor:输入张量
+bool tensor_output(const TensorStr *tensor)
+{
+	uint16_t i, j;
+	uint32_t u32offset0 = 0;
+	for (j = 0; j < tensor->deep; ++j) {
+		cout << "deep : " << j << "\n";
+		for (i = NULL; i < tensor->height; ++i) {
+			printf("layer : %d\n", i);
+			output(tensor->mat[i + u32offset0]);
+		}
+		u32offset0 += tensor->height;
+	}
 	return true;
 }
 
@@ -184,10 +198,10 @@ bool tensor_message(TensorStr *tensor, uint16_t deep)
 //释放张量内存
 //tensor:输入张量
 //return:bool标志
-bool tensor_delete(TensorStr *tensor)
+bool tensor_delete(TensorStr* &tensor)
 {
 	uint32_t i = NULL;
-	uint32_t nums_0 = tensor_element_size(tensor);
+	uint32_t nums_0 = tensor_mat_size(tensor);
 	if (tensor == 0){
 		return false;
 	}
@@ -230,11 +244,12 @@ TensorArch *tensorarch_create(array<uint16_t,4>l_u_buf, array<uint16_t, 4>r_d_bu
 //tensorarch:张量转移结构
 //return:bool标志
 //释放张量转移结构内存
-bool tensorarch_delete(TensorArch *tenasorarch)
+bool tensorarch_delete(TensorArch* &tenasorarch)
 {
 	tensor_delete(tenasorarch->l_u_tensor);
 	tensor_delete(tenasorarch->r_d_tensor);
 	delete tenasorarch;
+	tenasorarch = NULL;
 	return true;
 }
 
@@ -242,17 +257,14 @@ bool tensorarch_delete(TensorArch *tenasorarch)
 //tensorarch_add:tensorarch地址
 //direct:指向
 //打印tensorarch图
-bool tensorarch_output(TensorArch *tensorarch,uint8_t direct, uint16_t deep)
+bool tensorarch_output(const TensorArch *tensorarch)
 {
-	if ((direct&_direct_left) || (direct&_direct_up)) {
 		cout << "l_u_tensor = " << endl;
-		tensor_output(tensorarch->l_u_tensor, deep);
-	}
-
-	if ((direct&_direct_right) || (direct&_direct_down)) {
+		tensor_output(tensorarch->l_u_tensor);
 		cout << "r_d_tensor = " << endl;
-		tensor_output(tensorarch->r_d_tensor, deep);
-	}
+		tensor_output(tensorarch->r_d_tensor);
+		cout << "_______________________________________________________________________________";
+		cout << "\n\n";
 	return true;
 }
 
@@ -260,15 +272,17 @@ bool tensorarch_output(TensorArch *tensorarch,uint8_t direct, uint16_t deep)
 //tensor:输入张量
 //value:有效浮点数值
 //张量赋值
-bool tensor_assignment(TensorStr *tensor, float value)
+bool tensor_assign(TensorStr* &tensor, const float value)
 {
 	uint32_t i = NULL, nums_0 = tensor->height * tensor->deep;
 	for (; i < nums_0;++i) {
-		mat_assignment(tensor->mat[i],value);
+		mat_assign(tensor->mat[i],value);
 	}
 	return true;
 }
 
+//tensor:输入张量
+//loadtensor:装载张量
 //张量拷贝
 bool tensor_copy(const TensorStr *tensor, TensorStr *loadtensor)
 {
@@ -280,8 +294,10 @@ bool tensor_copy(const TensorStr *tensor, TensorStr *loadtensor)
 	return true;
 }
 
+//tensor:输入张量
+//value:升序起始值(默认值0.0f)
 //张量升序赋值
-bool tensor_up_assign(TensorStr *tensor, const float value)
+bool tensor_up_assign(TensorStr* &tensor, const float value)
 {
 	uint32_t i = 0, u32num0 = tensor->deep*tensor->height;
 	for (; i < u32num0; ++i) {
@@ -290,8 +306,33 @@ bool tensor_up_assign(TensorStr *tensor, const float value)
 	return true;
 }
 
+//tensor:输入矩阵
 //返回张量矩阵数量
 uint32_t tensor_mat_size(const TensorStr *tensor)
 {
 	return uint32_t(tensor->deep*tensor->height);
+}
+
+//l_tensor:左张量
+//r_tensor:右张量
+//loadtensor:装载张量
+//张量点乘
+bool tensor_dotmult(TensorStr *& l_tensor, TensorStr *& r_tensor, TensorStr* loadtensor) 
+{
+	uint32_t num0 = tensor_mat_size(loadtensor);
+	for (uint16_t i = 0; i < num0; ++i) {
+		f32mat_dotmult_par(l_tensor->mat[i],r_tensor->mat[i], loadtensor->mat[i]);
+	}
+	return true;
+}
+
+//tensor:输入张量
+//张量矩阵元素似正态随机赋值
+bool tensor_rand_normal_mat(TensorStr* &tensor)
+{
+	uint32_t num0 = tensor_mat_size(tensor);
+	for (uint32_t i = 0; i < num0; ++i) {
+		mat_rand_normal(tensor->mat[i]);
+	}
+	return true;
 }

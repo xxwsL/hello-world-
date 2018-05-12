@@ -25,7 +25,7 @@
 
 //矩阵可执行函数
 #define MatInit mat_create,mat_delete
-#define MatDeal output,mat_cut,mat_assignment,mat_zero,mat_size,mat_message
+#define MatDeal output,mat_cut,mat_assign,mat_zero,mat_size,mat_message
 #define MatMath mat_covar,mat_norm2,mat_mult	
 #define MatFiInit {MatInit,MatDeal,MatMath}
 
@@ -40,7 +40,7 @@
 typedef struct MatFunction {
 
 	struct MatrixStr* (*mat_create) (uint16_t mat_line, uint16_t mat_row, uint16_t mat_type);
-    bool (*mat_delete) (struct MatrixStr *mat);
+    bool (*mat_delete) (struct MatrixStr* &mat);
 	//矩阵处理函数
 	bool (*output) (const struct MatrixStr *mat);
 	struct MatrixStr* (*mat_cut) (const struct MatrixStr *mat_a, uint16_t cut_line_size, uint16_t cut_row_size, uint16_t number, uint16_t remat_type);
@@ -69,8 +69,8 @@ extern MatFistr mat_tf;
 
 //创建矩阵
 MatStr* mat_create(uint16_t mat_line, uint16_t mat_row, uint16_t mat_type);
-//释放矩阵
-bool mat_delete(MatStr *mat);
+//释放矩阵(更安全版本)
+bool mat_delete(MatStr* &mat);
 //创建张量
 MatStr** mat_vetor_create(uint16_t vetor_len);
 
@@ -79,7 +79,7 @@ bool output(const MatStr *mat);
 //切割矩阵
 MatStr* mat_cut(const MatStr *mat_a, uint16_t cut_line_size, uint16_t cut_row_size, uint16_t number, uint16_t remat_type);
 //矩阵赋值
-bool mat_assignment(MatStr *mat, float value =0.0f);
+bool mat_assign(MatStr *mat, float value =0.0f);
 //矩阵赋0
 bool mat_zero(MatStr *mat);
 //矩阵大小
@@ -93,7 +93,7 @@ bool mat_load(MatStr *mat, uint16_t line, uint16_t row, uint16_t mattype, void *
 //两个矩阵校对
 bool mat_proofread(const MatStr *mat_a, const MatStr *mat_b);
 //数组对应位转换相对应向量
-bool mat_tovector(const uint8_t *buf, MatStr *loadmat, float r_value = 0.1f);
+bool mat_tovector(const uint8_t *buf, MatStr *loadmat, float r_value = 1.0f);
 //矩阵赋值似正态随机值
 bool mat_rand_normal(MatStr *mat);
 //矩阵上下翻转
@@ -115,7 +115,7 @@ bool mat_mult_par(const MatStr *mat_l, const MatStr *mat_r, MatStr *loadmat);
 //矩阵qr分解
 bool mat_qr(const MatStr *mat, MatStr *q_mat, MatStr *s_mat);
 //矩阵加法
-MatStr* mat_add(const MatStr *mat_a, const MatStr *mat_b);
+bool mat_add(const MatStr *mat_a, const MatStr *mat_b, MatrixStr* &loadmat);
 //矩阵减法
 MatStr* mat_sub(const MatStr *mat_a, const MatStr *mat_b);
 bool mat_sub_par(const MatStr *mat_a, const MatStr *mat_b, MatStr *loadmat);
@@ -123,7 +123,7 @@ bool mat_sub_par(const MatStr *mat_a, const MatStr *mat_b, MatStr *loadmat);
 MatStr* mat_signmoid(const MatStr *mat);
 bool mat_signmoid_par(const MatStr *mat, MatStr *loadmat);
 //矩阵点乘and叉乘
-float f32mat_dotmult_par(const MatStr *mat_l,const MatStr *mat_r, MatStr *loadmat);
+float f32mat_dotmult_par(const MatStr *mat_l,const MatStr *mat_r, MatStr *loadmat = 0);
 //矩阵tanh函数化
 bool mat_tanh_par(const MatStr *mat, MatStr *loadmat);
 //矩阵relu函数化
@@ -151,16 +151,16 @@ bool mat_softmax_submax_par(const MatStr *mat, MatStr *loadmat);
 //平方损失函数
 float mat_square_loss(const MatStr *mat, const MatStr *target);
 //矩阵卷积
-bool mat_conv(const MatrixStr *in_mat, MatrixStr *kernel, MatrixStr *load_mat, uint8_t line_stride, uint8_t row_stride, uint8_t padding);
+bool mat_conv(const MatrixStr *in_mat, MatrixStr *kernel, MatrixStr *load_mat, uint8_t line_stride, uint8_t row_stride, uint8_t padding = 0);
 //矩阵均值池化
-bool mat_pooling(const MatrixStr *mat, uint16_t pool_line, uint16_t pool_row, MatrixStr *loadmat);
-//矩阵所有元素成一个数
-bool mat_mult_element(const MatrixStr *mat, float value, MatrixStr *loadmat);
+bool mat_aver_pooling(const MatrixStr *mat, uint16_t pool_line, uint16_t pool_row, MatrixStr *loadmat);
+//矩阵所有元素乘一个数
+bool mat_mult_element(const MatrixStr *mat, const float value, MatrixStr *loadmat);
 //均值池化还原
-bool mat_pooling_redu(const MatrixStr *mat, const uint16_t pool_line, const uint16_t pool_row, MatrixStr *loadmat);
+bool mat_aver_pooling_redu(const MatrixStr *mat, const uint16_t pool_line, const uint16_t pool_row, MatrixStr *loadmat);
 //卷积矩阵求梯度
-bool mat_conv_gr(const MatrixStr *error_mat, const MatrixStr *in_mat, MatrixStr *loadmat, const uint16_t line_stride, const uint16_t row_stride);
+bool mat_conv_gr(const MatrixStr *error_mat, const MatrixStr *in_mat, MatrixStr* &loadmat, const uint16_t line_stride, const uint16_t row_stride);
 //卷积均值误差传递
-bool mat_conv_back(const MatrixStr *error_mat, const MatrixStr *kernel_mat, MatrixStr *loadmat, const uint16_t stride_line, const uint16_t stride_row);
+bool mat_conv_pass(const MatrixStr *error_mat, const MatrixStr *kernel_mat, MatrixStr *loadmat, const uint16_t stride_line, const uint16_t stride_row);
 
 #endif // ! _matrix_ot_h_

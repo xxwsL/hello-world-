@@ -21,6 +21,9 @@
 #define _cnn_pooling_coor 0x04
 #define _cnn_pooling_all  0x07
 
+#define _get_cnn_conv(name) ((cnn_conv*)name)
+#define _get_cnn_pool(name) ((cnn_pool*)name)
+
 //卷积层类
 class cnn_conv {
 public:
@@ -48,14 +51,20 @@ public:
 	//打印函数
 	bool output(const uint8_t content = _cnn_conv_all);
 	//卷积操作
-	bool conv_ot(const struct TensorStr *tensor, uint16_t deep = 0);
+	bool conv_ot(const struct TensorStr *tensor);
 	//cnn_conv输出求激活函数便导
 	bool conv_fd(void);
 	//求卷积核梯度
-	bool conv_gr(const TensorStr *tensor);
+	bool conv_gr(const struct TensorStr *tensor);
+	//误差传递到下一层conv
+	bool error_pass_conv(struct TensorStr *tensor);
+	//误差传递到下一层pool
+	bool error_pass_pool(struct TensorStr *tensor);
+	//更新卷积核
+	bool update(const float &learmspeed);
 };
 
-class cnn_pooling {
+class cnn_pool {
 public:
 	//输出张量
 	struct TensorStr *out;
@@ -63,15 +72,15 @@ public:
 	struct TensorStr *coor_y;
 public:
 	//构造函数
-	cnn_pooling();
+	cnn_pool();
 	//析构函数
-	~cnn_pooling();
+	~cnn_pool();
 	//用户构造函数
-	cnn_pooling(uint16_t line_v, uint16_t row_v, array<uint16_t, 4> out_v, uint8_t type);
+	cnn_pool(uint16_t line_v, uint16_t row_v, array<uint16_t, 4> out_v, uint8_t type);
 	//池化操作函数
-	bool pooling_ot(const struct TensorStr *tensor, const uint16_t deep = 0);
+	bool pooling_ot(const struct TensorStr *tensor);
 	//打印函数
-	bool output(const uint8_t content, const uint16_t deep = 0);
+	bool output(const uint8_t content = _cnn_pooling_all);
 	//误差反向传播
 	bool error_pass(TensorStr *tensor, uint16_t deep = 0);
 private:

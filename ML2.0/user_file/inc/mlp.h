@@ -2,8 +2,7 @@
 #define _mlp_h_
 #include "xxwsL.h"
 
-//创建mlp宏
-#define new_mlp(name,op,fi,line,row) struct MlpStr *name=mlp_create(op,fi,line,row) 
+#define _get_mlp(name) ((struct MlpStr*)name)
 
 //mlp的内容宏
 #define _mlp_layer  0x01
@@ -38,9 +37,11 @@ typedef struct MlpStr {
 //mlp节点初始化
 bool mlp_init(mlpstr *mlp, float op, bool (*active_fi) (const struct MatrixStr *mat, struct MatrixStr *loadmat), struct TensorStr *layer);
 //单节点mlp前向过程
-bool mlp_one_op(MlpStr *mlp, struct TensorStr *inmat, uint16_t nums = 0);
+bool mlp_one_op(MlpStr *mlp, struct TensorStr *inmat);
 //创建mlp数据域
 MlpStr *mlp_create(float op, bool (*active_fi) (const struct MatrixStr *mat, struct MatrixStr *loadmat), uint16_t line, uint16_t row);
+//删除mlp
+bool mlp_create(MlpStr* &mlp);
 //打印mlp
 bool mlp_output(void *mlp_add, uint8_t content);
 //各个连接层梯度

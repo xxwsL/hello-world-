@@ -6,7 +6,7 @@
 //end_graph:训练图结尾节点
 //target_set:标签集
 //神经网络类构造函数(输入形参)
-network_l::network_l(float *tr_message, struct GraphStr *start_graph, TensorStr *target_set, TensorStr *in_train)
+network_l::network_l(float *tr_message, struct GraphStr *start_graph, TensorStr *target_set, TensorStr *in_tensor)
 {
 	GraphStr *p=NULL;
 	//训练模型信息初始化
@@ -35,9 +35,7 @@ network_l::network_l(float *tr_message, struct GraphStr *start_graph, TensorStr 
 		break;
 	}
 	//装载训练输入数据
-	tr.in_train = in_train;
-	//申请批标签集
-	tr.label = new uint16_t [(uint32_t)tr.tr_message[2]];
+	tr.in_train = in_tensor;
 }
 
 //优化次数:0
@@ -60,7 +58,6 @@ network_l::network_l()
 //network_l类析构函数
 network_l::~network_l()
 {
-	delete[] tr.label;
 }
 
 //优化:0
@@ -182,17 +179,17 @@ bool network_l::forward_propaga_step(struct GraphStr *graph,uint8_t direct)
 
 //nums:批数据当前进度
 //神经网络前向传播
-bool network_l::forward_propaga(uint16_t nums,uint16_t deep)
+bool network_l::forward_propaga(void)
 {
 	float error_total = NULL;
 	GraphStr *graph_p = tr.strat_graph;
 	//第一步前向传播
-	graph_forward_switch(tr.in_train, graph_p, _direct_left, nums);
-	//中间层前向传播
+	graph_forward_switch(tr.in_train, graph_p, _direct_left);
+	//搜索下一张图
 	graph_p = tr.strat_graph->right_add;
 	while (graph_p){
 		//前向传播一次
-		graph_forward_switch(get_graph_tensor(graph_p, _direct_left), graph_p, _direct_left, nums, deep);
+		graph_forward_switch(get_graph_tensor(graph_p, _direct_left), graph_p, _direct_left);
 		graph_p = graph_p->right_add;
 	}
 	return true;
@@ -200,26 +197,27 @@ bool network_l::forward_propaga(uint16_t nums,uint16_t deep)
 
 //求输出总误差
 //label:标签
-float network_l::total_error(uint16_t label)
+float network_l::total_error(void)
 {
-	return tr.loss_fi(get_graph_tensor(tr.end_graph, _direct_now)->mat[0],tr.target_set->mat[label]);
+	return tr.loss_fi(get_graph_tensor(tr.end_graph, _direct_now)->mat[0],tr.target_set->mat[tr.label]);
 }
 
 //神经网络反向传播
 //label:标签
-bool network_l::back_propaga(uint16_t label,uint16_t nums)
+bool network_l::back_propaga(void)
 {
 	MlpStr *mlp_0=NULL;
 	GraphStr *graph_p = tr.end_graph;
 	//判断误差是否符合要求
-	if (total_error(label) < tr.tr_message[3]) {
-		cout << "模型效果良好" << endl;
+	if (total_error() < tr.tr_message[3]) {
+		cout << "模型效果良好\n";
+		cout << "_______________________________________________________________________________\n";
 		return false;
 	}
 	else {
 		mlp_0 = (MlpStr*)graph_p->graph_data;
 		//求最后一层微分(最后一层只允许为mlp层)
-		mlp_0->active_fid(mlp_0->outmat->mat[0], mlp_0->outmat->mat[0],tr.target_set->mat[label]);
+		mlp_0->active_fid(mlp_0->outmat->mat[0], mlp_0->outmat->mat[0],tr.target_set->mat[tr.label]);
 		//求各个层梯度(除了开始层)
 		while (graph_p!=tr.strat_graph) {
 			//当前图反向传播
@@ -228,7 +226,7 @@ bool network_l::back_propaga(uint16_t label,uint16_t nums)
 			graph_p = graph_p->left_add;
 		}
 		//开始层反向传播(此处使用了函数重载)
-		graph_back_switch(tr.in_train, graph_p, nums);
+		graph_back_switch(tr.in_train, graph_p);
 	}
 	return true;
 }
@@ -246,47 +244,46 @@ bool network_l::update(void)
 }
 
 //喂数据
-bool network_l::feed_data(const char *simaple_file, const uint32_t i, uint16_t label)
+bool network_l::feed_data(const char *simaple_file, const uint32_t name, uint16_t label)
 {
-	read_bmp_to_buf(simaple_file, i, tr.in_train->mat[0]);
-	tr.label[0] = label;
+	read_bmp_to_buf(simaple_file, name, tr.in_train->mat[0]);
+	tr.label = label;
 	return true;
 }
 
-//批量喂数据
-bool network_l::batch_feed_data(const char *simaple_file, const uint32_t *i, uint16_t label)
-{
-	uint16_t nums_0 = NULL;
-	for (; nums_0 < tr.tr_message[2]; ++nums_0) {
-		read_bmp_to_buf(simaple_file, i[nums_0], tr.in_train->mat[nums_0]);
-		tr.label[nums_0] = label;
-	}
+bool network_l::feed_data(struct TensorStr *tensor, const uint16_t label) {
+		tr.in_train = tensor;
+		tr.label = label;
 	return true;
 }
+
+bool network_l::feed_data(void)
+{
+	return true;
+}
+
 
 //训练
 int network_l::train(void)
 {
 	uint16_t i = NULL;
 	//前向传播+反向传播
-	for (i = NULL; i < tr.tr_message[2]; ++i) {
-		forward_propaga(i);
-		output(_tr_end_graph, _mlp_outmat);
-		cout << test(i) << "\n";
-		back_propaga(tr.label[i], i);
-	}
+	forward_propaga();
+	cout << "输出总误差 = " << test() << "\n";
+	output(_tr_end_graph, _mlp_outmat);
+	back_propaga();
 	//更新神经网络
 	update();
 	return true;
 }
 
 //测试
-float network_l::test(uint16_t label)
+float network_l::test(void)
 {
 	//前向传播
-	forward_propaga(label);
+	forward_propaga();
 	//计算输出总误差
-	return total_error(tr.label[label]);
+	return total_error();
 }
 
 
