@@ -1,3 +1,5 @@
+#ifndef _VIDEOCAPTURE_H_
+#define _VIDEOCAPTURE_H_
 #include<opencv2/core/core.hpp>				//mat头文件
 #include<opencv2/highgui/highgui.hpp>		//opencv highgui 模块头文件	
 #include<opencv2/imgproc/imgproc.hpp>		//opencv 图像处理文件
@@ -8,7 +10,7 @@ using namespace cv;
 
 void canny_use(Mat image);
 
-int main()
+void videocapture_test_fi()
 {
 	VideoCapture video;											//定义一个视频的类
 	//video.open("E:\\图片仓库\\世界末日\\MV\\mv1.mp4");		//载入路径的视频
@@ -28,6 +30,7 @@ int main()
 	}
 
 	waitKey(0);
-	return 0;
 }
+
+#endif
 

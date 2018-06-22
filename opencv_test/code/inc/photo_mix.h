@@ -1,10 +1,12 @@
+#ifnndef _HOUGH_TEST_H_
+#define _HOUGH_TEST_H_
 #include<opencv2/core/core.hpp>  
 #include<opencv2/highgui/highgui.hpp>  
 
 using namespace cv;
 
 
-int main()
+void hough_test_fi(void)
 {
 
 	//-----------------------------------【一、图像的载入和显示】--------------------------------------  
@@ -50,6 +52,6 @@ int main()
 	//imwrite("我喜欢打dota2 by浅墨.jpg", image);
 
 	waitKey();
-
-	return 0;
 }
+
+#endif

@@ -1,3 +1,7 @@
+#pragma once
+#ifndef _TRAVERES_DIR_H_
+#define _TRAVERES_DIR_H_
+
 #include "stdlib.h"  
 #include "direct.h"  
 #include "string.h"  
@@ -194,7 +198,7 @@ protected:
 	}
 };
 
-void main()
+void traveres_dir_test_fi(void)
 {
 	//获取目录名  
 	char buf[256] = "E:/图片仓库";
@@ -214,5 +218,6 @@ void main()
 	//开始遍历  
 	statdir.BeginBrowse("*.*");
 	printf("文件总数: %d\n子目录总数:%d\n", statdir.GetFileCount(), statdir.GetSubdirCount());
-	while (1);
 }
+#endif // !_TRAVERES_DIR_H_
+

@@ -1,3 +1,6 @@
+#pragma once
+#ifndef _CLASS_TEST_H_
+#define _CLASS_TEST_H_
 #include <xxwsL.h>
 
 class class_exp
@@ -21,7 +24,7 @@ public:
 		return os;
 	}
 	//ÖØÔØ+ÔËËã·û
-	class_exp operator + (class_exp &exp_) const{
+	class_exp operator + (class_exp &exp_) const {
 		class_exp exp;
 		exp.name = name;
 		exp.value0 = value0 + exp_.value0;
@@ -34,11 +37,10 @@ private:
 	int value1;
 };
 
-int main(int argc, char argv[])
+void class_test_fi(void)
 {
 	class_exp exp0, exp1;
 	cin >> exp0 >> exp1;
 	cout << exp0 + exp1;
-	while (1);
-	return true;
 }
+#endif // !_CLASS_TEST_H_

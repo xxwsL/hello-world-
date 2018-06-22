@@ -1,3 +1,6 @@
+#pragma once
+#ifndef _AUTO_TEST_H_
+#define _AUTO_TEST_H_
 #include <xxwsL.h>
 
 //用auto初始化模版函数
@@ -5,10 +8,10 @@ template <class T, class U>
 auto Multiply(T t, U u)
 {
 	return t * u;
-	
+
 }
 
-void auto_t0(void) 
+void auto_t0(void)
 {
 	//用auto初始化函数
 	auto ptr = [](uint16_t i)
@@ -19,7 +22,7 @@ void auto_t0(void)
 	ptr(1);
 }
 
-int main(void)
+void auto_test_fi(void)
 {
 	int a[9];
 	auto j = a;
@@ -27,6 +30,6 @@ int main(void)
 
 	auto& k = a;
 	cout << typeid(k).name() << endl; // This will print int [9] 
-	while (1);
-	return true;
 }
+
+#endif // !_AUTO_TEST_H_

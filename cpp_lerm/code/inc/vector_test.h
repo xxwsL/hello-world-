@@ -1,3 +1,6 @@
+#pragma once
+#ifndef _VECTOR_TEST_H_
+#define _VECTOR_TEST_H_
 #include <xxwsL.h>
 #include <vector_use.h>
 
@@ -19,9 +22,9 @@ vector<string> make_vector()
 void vector_t0(void)
 {
 	//v0
-	vector<int> v0;		
+	vector<int> v0;
 	for (int i = 2; i <= 12; ++i) {
-		cout << i <<"\n";
+		cout << i << "\n";
 		v0.push_back(i);
 	}
 	vector<int>::iterator i0 = v0.end() - 1;		//创建一个迭代器
@@ -34,7 +37,7 @@ void vector_t0(void)
 
 	//v2
 	vector<int>::iterator it0 = v0.begin();
-	vector<int> v2(it0+0, it0+3);					//将v1在0到3区间的元素拷贝到v2
+	vector<int> v2(it0 + 0, it0 + 3);					//将v1在0到3区间的元素拷贝到v2
 	printvector(v2);
 
 	//v3
@@ -42,7 +45,7 @@ void vector_t0(void)
 	printvector(v3);
 
 	//v4
-	vector<int> v4(5);								
+	vector<int> v4(5);
 	v4[1] = v4.at(3) = 9;							//容器对应位置赋值
 	printvector(v4);
 
@@ -104,7 +107,7 @@ void vector_t0(void)
 	printvector(v4);
 
 	//sort
-	sort(v4.begin() , v4.end());
+	sort(v4.begin(), v4.end());
 	printvector(v4);
 }
 
@@ -130,9 +133,8 @@ void vector_t1(void)
 
 }
 
-int main(void)
+void vector_test_fi(void)
 {
 	vector_t0();
-	while (1);
-	return true;
 }
+#endif // !_VECTOR_TEST_H_

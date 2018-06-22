@@ -1,11 +1,10 @@
 #include <xxwsL.h>
 #include <send_poker_.h>
+#include <pthread_test.h>
 
 int main(void) {
 	//send_poker_test_fi();
-	for (int i = 0; i < 10; ++i) {
-		cout << i % 5 << "\n";
-	}
+	pthread_test_fi0();
 	while (1);
 	return true;
 }

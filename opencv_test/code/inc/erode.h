@@ -1,3 +1,6 @@
+#ifndef _ERODE_H_
+#define _ERODE_H_
+
 #include<opencv2/core/core.hpp>  
 #include<opencv2/highgui/highgui.hpp>		//opencv highgui 模块头文件	
 #include<opencv2/imgproc/imgproc.hpp>		//opencv 图像处理文件
@@ -8,7 +11,7 @@
 using namespace std;
 using namespace cv;
 
-int main()
+void erode_test_fi()
 {
 	Mat image = imread("E:\\图片仓库\\世界末日\\opencv_test0\\0.jpg");  //存放自己图像的路径 
 	namedWindow("原图");
@@ -20,5 +23,6 @@ int main()
 	imshow("效果图（腐蚀图）",dstlmage);
 
 	waitKey(0);
-	return 0;
 }
+
+#endif

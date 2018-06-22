@@ -1,3 +1,6 @@
+#ifndef _BIUR_H_
+#define _BIUR_H_
+
 #include <opencv.hpp>
 #include <cv.h>  
 #include <iostream>  
@@ -5,7 +8,7 @@
 using namespace std;
 using namespace cv;
 
-int main()
+void blur_test_fi(void)
 {
 	Mat image = imread("E:\\图片仓库\\世界末日\\opencv_test0\\0.jpg");  //存放自己图像的路径 
 	namedWindow("原图");
@@ -18,5 +21,6 @@ int main()
 	imshow("效果图（模糊图）", dstimage);
 
 	waitKey(0);
-	return 0;
 }
+
+#endif // !_BIUR_H_
