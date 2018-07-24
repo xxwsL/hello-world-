@@ -1,0 +1,2 @@
+/usr/bin/ar qc libres_lib.a  CMakeFiles/res_lib.dir/pailndrome_number_t.cpp.o
+/usr/bin/ranlib libres_lib.a

@@ -1,0 +1,16 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../inc/pailndrome_number_t.h
+
+/home/cpp/leecode/res/pailndrome_number_t.cpp
+iostream
+-
+pailndrome_number_t.h
+/home/cpp/leecode/res/pailndrome_number_t.h
+
