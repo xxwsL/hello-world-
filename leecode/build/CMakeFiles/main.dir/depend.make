@@ -10,6 +10,7 @@ CMakeFiles/main.dir/main.cpp.o: ../inc/add_binary_t.h
 CMakeFiles/main.dir/main.cpp.o: ../inc/climb_stair_t.h
 CMakeFiles/main.dir/main.cpp.o: ../inc/contain_most_water_t.h
 CMakeFiles/main.dir/main.cpp.o: ../inc/count_and_say_t.h
+CMakeFiles/main.dir/main.cpp.o: ../inc/divide_two_integers_t.h
 CMakeFiles/main.dir/main.cpp.o: ../inc/int_to_roman_t.h
 CMakeFiles/main.dir/main.cpp.o: ../inc/interval.h
 CMakeFiles/main.dir/main.cpp.o: ../inc/jump_game_t.h
@@ -21,15 +22,18 @@ CMakeFiles/main.dir/main.cpp.o: ../inc/longest_substring_t.h
 CMakeFiles/main.dir/main.cpp.o: ../inc/median_two_sortarray_t.h
 CMakeFiles/main.dir/main.cpp.o: ../inc/merge_interval_t.h
 CMakeFiles/main.dir/main.cpp.o: ../inc/merge_sort_array_t.h
+CMakeFiles/main.dir/main.cpp.o: ../inc/merge_sort_list_t.h
 CMakeFiles/main.dir/main.cpp.o: ../inc/merge_two_chainlist_t.h
 CMakeFiles/main.dir/main.cpp.o: ../inc/my_sqrt_t.h
 CMakeFiles/main.dir/main.cpp.o: ../inc/pailndrome_number_t.h
 CMakeFiles/main.dir/main.cpp.o: ../inc/permutation_queue_t.h
 CMakeFiles/main.dir/main.cpp.o: ../inc/plus_one_t.h
+CMakeFiles/main.dir/main.cpp.o: ../inc/regular_match_t.h
 CMakeFiles/main.dir/main.cpp.o: ../inc/remove_element_t.h
 CMakeFiles/main.dir/main.cpp.o: ../inc/remove_nth_listnode_t.h
 CMakeFiles/main.dir/main.cpp.o: ../inc/remove_vec_same_t.h
 CMakeFiles/main.dir/main.cpp.o: ../inc/reverse_Integer_t.h
+CMakeFiles/main.dir/main.cpp.o: ../inc/reverse_list_in_k_group_t.h
 CMakeFiles/main.dir/main.cpp.o: ../inc/rm_dup_sortlist_t.h
 CMakeFiles/main.dir/main.cpp.o: ../inc/roman_to_int_t.h
 CMakeFiles/main.dir/main.cpp.o: ../inc/rotate_list_t.h
@@ -37,10 +41,12 @@ CMakeFiles/main.dir/main.cpp.o: ../inc/same_tree_t.h
 CMakeFiles/main.dir/main.cpp.o: ../inc/search_insert_pos_t.h
 CMakeFiles/main.dir/main.cpp.o: ../inc/spiral_mat_t.h
 CMakeFiles/main.dir/main.cpp.o: ../inc/strstr_t.h
+CMakeFiles/main.dir/main.cpp.o: ../inc/swap_list_pair_t.h
 CMakeFiles/main.dir/main.cpp.o: ../inc/tree.h
 CMakeFiles/main.dir/main.cpp.o: ../inc/unique_path_t.h
 CMakeFiles/main.dir/main.cpp.o: ../inc/vaild_brackets_t.h
 CMakeFiles/main.dir/main.cpp.o: ../inc/vaild_number_t.h
 CMakeFiles/main.dir/main.cpp.o: ../inc/xxwsL.h
+CMakeFiles/main.dir/main.cpp.o: ../inc/z_conversion_t.h
 CMakeFiles/main.dir/main.cpp.o: ../main.cpp
 

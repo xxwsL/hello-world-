@@ -8,18 +8,19 @@ struct ListNode {
     ListNode(int x) : val(x), next(NULL) {}
  };
 
-ListNode* listnode_t_fi(void)
+ListNode* listnode_t_fi(const uint nums)
 {
-    ListNode *l0, *l1, *l2, *l3, *l4;
-    l0 = new ListNode(1);
-    l1 = new ListNode(2);
-    l2 = new ListNode(3);
-    l3 = new ListNode(4);
-    l4 = new ListNode(5);
-    l0->next = l1;
-    l1->next = l2;
-    l2->next = l3; 
-    l3->next = l4;
-    return l0;
+    ListNode *pListNode_head, *pListNode_tp;
+    for(uint i = 0; i < nums; ++i){
+        if(!i){
+            pListNode_head = new ListNode(i);
+            pListNode_tp = pListNode_head;
+        }
+        else{
+            pListNode_tp->next = new ListNode(i);
+            pListNode_tp = pListNode_tp->next;
+        }
+    }
+    return pListNode_head;
 }
 #endif

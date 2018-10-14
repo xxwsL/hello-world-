@@ -11,6 +11,7 @@ CMakeFiles/main.dir/main.cpp.o
  ../inc/climb_stair_t.h
  ../inc/contain_most_water_t.h
  ../inc/count_and_say_t.h
+ ../inc/divide_two_integers_t.h
  ../inc/int_to_roman_t.h
  ../inc/interval.h
  ../inc/jump_game_t.h
@@ -22,15 +23,18 @@ CMakeFiles/main.dir/main.cpp.o
  ../inc/median_two_sortarray_t.h
  ../inc/merge_interval_t.h
  ../inc/merge_sort_array_t.h
+ ../inc/merge_sort_list_t.h
  ../inc/merge_two_chainlist_t.h
  ../inc/my_sqrt_t.h
  ../inc/pailndrome_number_t.h
  ../inc/permutation_queue_t.h
  ../inc/plus_one_t.h
+ ../inc/regular_match_t.h
  ../inc/remove_element_t.h
  ../inc/remove_nth_listnode_t.h
  ../inc/remove_vec_same_t.h
  ../inc/reverse_Integer_t.h
+ ../inc/reverse_list_in_k_group_t.h
  ../inc/rm_dup_sortlist_t.h
  ../inc/roman_to_int_t.h
  ../inc/rotate_list_t.h
@@ -38,9 +42,11 @@ CMakeFiles/main.dir/main.cpp.o
  ../inc/search_insert_pos_t.h
  ../inc/spiral_mat_t.h
  ../inc/strstr_t.h
+ ../inc/swap_list_pair_t.h
  ../inc/tree.h
  ../inc/unique_path_t.h
  ../inc/vaild_brackets_t.h
  ../inc/vaild_number_t.h
  ../inc/xxwsL.h
+ ../inc/z_conversion_t.h
  /home/cpp/leecode/main.cpp

@@ -44,6 +44,12 @@
 #include "4sum_t.h"
 #include "remove_nth_listnode_t.h"
 #include "median_two_sortarray_t.h"
+#include "regular_match_t.h"
+#include "z_conversion_t.h"
+#include "merge_sort_list_t.h"
+#include "swap_list_pair_t.h"
+#include "reverse_list_in_k_group_t.h"
+#include "divide_two_integers_t.h"
 
 using namespace std;
 
@@ -51,10 +57,24 @@ int main(int argc, char** argv){
     cout << "hello world\n";
     xxwsL::test();  cout << '\n';
 
-    
-    vector<int> vec10 = {1,3};
-    vector<int> vec11 = {2};
-    cout << median_two_sortarray_t_fi(vec10, vec11) << '\n';
+
+    divide_two_integers_t_fi(-2147483648, -1);
+
+    // reverse_list_in_k_group_t_fi(listnode_t_fi(5), 3);
+
+    // swapPairs(listnode_t_fi(4));
+    // swap_list_pair_t_fi(listnode_t_fi(4));
+
+    // vector<ListNode*> lists(2);
+    // merge_sort_list_t_fi(lists);
+
+    // z_conversion_t_fi("PAYPALISHIRING", 3);
+
+    // isMatch_temp0("aab", "c*a*b");
+            
+    // vector<int> vec10 = {1,3};
+    // vector<int> vec11 = {2};
+    // cout << median_two_sortarray_t_fi(vec10, vec11) << '\n';
     
     // remove_nth_listnode_t_fi(listnode_t_fi(), 3);
 
@@ -161,6 +181,6 @@ int main(int argc, char** argv){
     // vector<int> vec6 = {2,3,5,7,1};
     // cout << contain_most_water_t_fi(vec6) << "\n";
 
-    while(1);
+    while(std::cin.get() != '\n');
     return true;
 }

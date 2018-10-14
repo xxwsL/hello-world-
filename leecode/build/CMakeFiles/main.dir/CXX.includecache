@@ -56,6 +56,10 @@ vector
 iostream
 -
 
+../inc/divide_two_integers_t.h
+iostream
+-
+
 ../inc/int_to_roman_t.h
 iostream
 -
@@ -126,6 +130,18 @@ iostream
 vector
 -
 
+../inc/merge_sort_list_t.h
+iostream
+-
+list
+-
+vector
+-
+queue
+-
+ListNode.h
+../inc/ListNode.h
+
 ../inc/merge_two_chainlist_t.h
 iostream
 -
@@ -143,6 +159,12 @@ iostream
 -
 
 ../inc/plus_one_t.h
+iostream
+-
+vector
+-
+
+../inc/regular_match_t.h
 iostream
 -
 vector
@@ -175,6 +197,14 @@ limits.h
 -
 iostream
 -
+
+../inc/reverse_list_in_k_group_t.h
+iostream
+-
+vector
+-
+ListNode.h
+../inc/ListNode.h
 
 ../inc/rm_dup_sortlist_t.h
 iostream
@@ -214,6 +244,12 @@ vector
 iostream
 -
 
+../inc/swap_list_pair_t.h
+iostream
+-
+ListNode.h
+../inc/ListNode.h
+
 ../inc/tree.h
 iostream
 -
@@ -234,6 +270,12 @@ iostream
 
 ../inc/xxwsL.h
 iostream
+-
+
+../inc/z_conversion_t.h
+iostream
+-
+vector
 -
 
 /home/cpp/leecode/main.cpp
@@ -325,4 +367,16 @@ remove_nth_listnode_t.h
 /home/cpp/leecode/remove_nth_listnode_t.h
 median_two_sortarray_t.h
 /home/cpp/leecode/median_two_sortarray_t.h
+regular_match_t.h
+/home/cpp/leecode/regular_match_t.h
+z_conversion_t.h
+/home/cpp/leecode/z_conversion_t.h
+merge_sort_list_t.h
+/home/cpp/leecode/merge_sort_list_t.h
+swap_list_pair_t.h
+/home/cpp/leecode/swap_list_pair_t.h
+reverse_list_in_k_group_t.h
+/home/cpp/leecode/reverse_list_in_k_group_t.h
+divide_two_integers_t.h
+/home/cpp/leecode/divide_two_integers_t.h
 

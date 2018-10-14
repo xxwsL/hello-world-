@@ -26,12 +26,12 @@ int contain_most_water_t_fi(vector<int>& height)
         else{
             lenght = height[r_ans];
             r_ans--;
-        }
+        
         uint area_tp = widht * lenght;
         area = max(area, area_tp); 
+        }
     }
     return area;
 }
-
 
 #endif
